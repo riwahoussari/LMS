@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using LMS.Application.DTOs;
+using LMS.Application.Interfaces;
 using LMS.Application.Services;
 using LMS.Application.Validators;
 using LMS.Domain.Entities;
@@ -13,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -23,180 +25,187 @@ namespace LMS.Api.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<AppUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _config;
-        private readonly IRefreshTokenService _refreshTokenService;
+        private readonly IAuthService _authService;
+        private readonly IUserService _userService;
+        
 
-
-        public AuthController(UserManager<AppUser> userManager,
-                              RoleManager<IdentityRole> roleManager,
-                              IConfiguration config,
-                              IRefreshTokenService refreshTokenService)
+        public AuthController(IConfiguration config,
+                              IAuthService authService,
+                              IUserService userService)
         {
-            _userManager = userManager;
-            _roleManager = roleManager;
             _config = config;
-            _refreshTokenService = refreshTokenService;
+            _authService = authService;
+            _userService = userService;
         }
 
         // ------------------- REGISTER -------------------
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto dto)
+        [HttpPost("register-admin")]
+        public async Task<IActionResult> RegisterAdmin(RegisterUserBaseDto dto)
         {
             // data validation
-            var validator = new RegisterDtoValidator();
-            var validationResult = await validator.ValidateAsync(dto);
+            var errors = await ValidateAsync<RegisterUserBaseDto>(dto,
+                typeof(RegisterUserBaseDtoValidator));
 
-            if (!validationResult.IsValid)
+            if (errors.Any())
+                return BadRequest(new { Errors = errors });
+
+            // Registration
+            try
             {
-                return BadRequest(validationResult.Errors.Select(e => new {
-                    Property = e.PropertyName,
-                    Error = e.ErrorMessage
-                }));
+                var user = await _authService.RegisterAdminAsync(dto);
+                var tokenResponse = await CreateTokenResponse(user);
+                return Ok(tokenResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
 
-            // creating user
-            var user = new AppUser
-            {
-                UserName = dto.Email,
-                Email = dto.Email,
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                RoleId = (await _roleManager.FindByNameAsync(dto.RoleName.ToLower()))!.Id
-            };
-
-            var result = await _userManager.CreateAsync(user, dto.Password);
-            if (!result.Succeeded) return BadRequest(result.Errors);
-
-
-            // Tokens
-            var jwtToken = await GenerateJwtToken(user);
-            RefreshToken refreshToken = await _refreshTokenService.CreateAsync(user);
-
-            return Ok(new
-            {
-                AccessToken = jwtToken,
-                RefreshToken = refreshToken.Token, // Only return the token string
-                ExpiresIn = Convert.ToDouble(_config.GetSection("Jwt")["ExpireMinutes"]) * 60, // access token expiry in seconds
-                User = new
-                {
-                    id = user.Id,
-                    firstName = user.FirstName,
-                    lastName = user.LastName,
-                    email = user.Email,
-                    role = dto.RoleName
-                }
-            });
         }
+
+        [HttpPost("register-student")]
+        public async Task<IActionResult> RegisterStudent(RegisterStudentDto dto)
+        {
+            // data validation
+            var errors = await ValidateAsync<RegisterStudentDto>(dto,
+                typeof(RegisterUserBaseDtoValidator),
+                typeof(RegisterStudentDtoValidator));
+
+            if (errors.Any())
+                return BadRequest(new { Errors = errors });
+
+            // Registration
+            try
+            {
+                var user = await _authService.RegisterStudentAsync(dto);
+                var tokenResponse = await CreateTokenResponse(user);
+                return Ok(tokenResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpPost("register-tutor")]
+        public async Task<IActionResult> RegisterTutor(RegisterTutorDto dto)
+        {
+            // data validation
+            var errors = await ValidateAsync<RegisterTutorDto>(dto,
+                typeof(RegisterUserBaseDtoValidator),
+                typeof(RegisterTutorDtoValidator));
+
+            if (errors.Any())
+                return BadRequest(new { Errors = errors });
+
+            // Registration
+            try
+            {
+                var user = await _authService.RegisterTutorAsync(dto);
+                var tokenResponse = await CreateTokenResponse(user);
+                return Ok(tokenResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
 
         // ------------------- LOGIN -------------------
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             // data validation
-            var validator = new LoginDtoValidator();
-            var validationResult = await validator.ValidateAsync(dto);
+            var errors = await ValidateAsync<LoginDto>(dto,
+                typeof(LoginDtoValidator));
 
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors.Select(e => new {
-                    Property = e.PropertyName,
-                    Error = e.ErrorMessage
-                }));
-            }
+            if (errors.Any())
+                return BadRequest(new { Errors = errors });
 
             // sign in user
-            var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))
-                return Unauthorized("Invalid credentials");
-
-            // Tokens
-            var role = await _roleManager.FindByIdAsync(user.RoleId!);
-            var jwtToken = await GenerateJwtToken(user);
-            RefreshToken refreshToken = await _refreshTokenService.CreateAsync(user);
-
-            return Ok(new
+            try
             {
-                AccessToken = jwtToken,
-                RefreshToken = refreshToken.Token, // Only return the token string
-                ExpiresIn = Convert.ToDouble(_config.GetSection("Jwt")["ExpireMinutes"]) * 60, // access token expiry in seconds
-                User = new
-                {
-                    id = user.Id,
-                    firstName = user.FirstName,
-                    lastName = user.LastName,
-                    email = user.Email,
-                    role = role.Name
-                }
-            });
+                var user = await _authService.LoginAsync(dto.Email, dto.Password);
+                var tokenResponse = await CreateTokenResponse(user);
+                return Ok(tokenResponse);
+            }
+            catch (AuthenticationException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            
         }
+
 
         // ------------------- REFRESH -------------------
         [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh([FromBody] RefreshRequest dto)
+        public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto dto)
         {
-            var storedToken = await _refreshTokenService.GetAsync(dto.RefreshToken, true);
+            // data validation
+            var errors = await ValidateAsync<RefreshRequestDto>(dto,
+                typeof(RefreshRequestDtoValidator));
+
+            if (errors.Any())
+                return BadRequest(new { Errors = errors });
+
+            // validate token
+            var storedToken = await _authService.GetRefreshTokenAsync(dto.RefreshToken, true);
 
             if (storedToken == null || !storedToken.IsActive)
                 return Unauthorized("Invalid refresh token");
 
-            var newJwt = await GenerateJwtToken(storedToken.User);
-
             // rotate token (invalidate old, issue new)
-            await _refreshTokenService.RevokeAsync(storedToken.Token);
-            RefreshToken newRefresh = await _refreshTokenService.CreateAsync(storedToken.User);
+            await _authService.RevokeRefreshTokenAsync(storedToken.Token);
 
-
-            return Ok(new
-            {
-                AccessToken = newJwt,
-                RefreshToken = newRefresh.Token, // Only return the token string
-                ExpiresIn = Convert.ToDouble(_config.GetSection("Jwt")["ExpireMinutes"]) * 60, // access token expiry in seconds
-                User = new
-                {
-                    id = storedToken.User.Id,
-                    firstName = storedToken.User.FirstName,
-                    lastName = storedToken.User.LastName,
-                    email = storedToken.User.Email,
-                    role = storedToken.User.Role.Name,
-                }
-            });
+            var tokenResponse = await CreateTokenResponse(storedToken.User!);
+            return Ok(tokenResponse);
         }
+
 
         // ------------------- REVOKE -------------------
         [Authorize]
         [HttpPost("revoke")]
-        public async Task<IActionResult> Revoke([FromBody] RefreshRequest dto)
+        public async Task<IActionResult> Revoke([FromBody] RefreshRequestDto dto)
         {
-            var storedToken = await _refreshTokenService.GetAsync(dto.RefreshToken, false);
+            // data validation
+            var errors = await ValidateAsync<RefreshRequestDto>(dto,
+                typeof(RefreshRequestDtoValidator));
+
+            if (errors.Any())
+                return BadRequest(new { Errors = errors });
+
+            // validate token
+            var storedToken = await _authService.GetRefreshTokenAsync(dto.RefreshToken, false);
 
             if (storedToken == null || !storedToken.IsActive)
                 return NotFound("Token not found");
 
-            await _refreshTokenService.RevokeAsync(storedToken.Token);
+            // revoke
+            await _authService.RevokeRefreshTokenAsync(storedToken.Token);
 
             return Ok("Refresh token revoked");
         }
 
-        // ------------------- HELPERS -------------------
-        private async Task<string> GenerateJwtToken(AppUser user)
+
+        // ------------------- TOKEN RESPONSE HELPERS -------------------
+        private string GenerateJwtToken(UserResponseDto user)
         {
             var jwtSettings = _config.GetSection("Jwt");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var role = await _roleManager.FindByIdAsync(user.RoleId);
-            
-
+          
             var claims = new List<Claim>()
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("FirstName", user.FirstName),
                 new Claim("LastName", user.LastName),
-                new Claim("Role", role.Name)
+                new Claim("Role", user.RoleName)
             };
 
 
@@ -210,6 +219,46 @@ namespace LMS.Api.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        
+        private async Task<AuthResponseDto> CreateTokenResponse(UserResponseDto user)
+        {
+            var jwtToken = GenerateJwtToken(user);
+            var refreshToken = await _authService.CreateRefreshTokenAsync(user.Id);
+
+            return new AuthResponseDto
+            {
+                AccessToken = jwtToken,
+                RefreshToken = refreshToken.Token,
+                ExpiresIn = Convert.ToDouble(_config.GetSection("Jwt")["ExpiryMinutes"]) * 60,
+                User = user
+            };
+        }
+
+
+        // --------------------- VALIDATION HELPERS --------------------
+        private async Task<List<object>> ValidateAsync<T>(T model, params Type[] validatorTypes)
+        {
+            var errors = new List<object>();
+
+            foreach (var validatorType in validatorTypes)
+            {
+                if (Activator.CreateInstance(validatorType) is IValidator<T> validator)
+                {
+                    var result = await validator.ValidateAsync(model);
+                    if (!result.IsValid)
+                    {
+                        errors.AddRange(result.Errors.Select(e => new
+                        {
+                            Property = e.PropertyName,
+                            Error = e.ErrorMessage
+                        }));
+                    }
+                }
+            }
+
+            return errors;
+        }
+
 
     }
 }

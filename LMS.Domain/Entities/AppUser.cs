@@ -12,7 +12,7 @@ namespace LMS.Domain.Entities
     {
         public required string FirstName { get; set; }
         public required string LastName { get; set; }
-        public DateTime? BirthDate { get; set; }
+        public string? BirthDate { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Single role per user FK

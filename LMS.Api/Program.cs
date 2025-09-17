@@ -1,12 +1,17 @@
+using LMS.Application.Interfaces;
+using LMS.Application.Mappings;
+using LMS.Application.Services;
 using LMS.Domain.Entities;
+using LMS.Domain.Interfaces;
+using LMS.Infrastructure;
 using LMS.Infrastructure.Persistence;
+using LMS.Infrastructure.Repositories;
 using LMS.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using LMS.Application.Services;
 
 DotNetEnv.Env.Load();
 
@@ -49,12 +54,25 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// AutoMapper library setup
+builder.Services.AddAutoMapper(typeof(MappingProfile), typeof(Program), typeof(AuthService));
+
 // Seeding
 builder.Services.AddScoped<RoleSeeder>();
 builder.Services.AddScoped<AdminSeeder>();
 
-// Refresh Token Service
-builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+// Services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+// Repositories
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+//builder.Services.AddScoped<IRepository<object>, Repository<object>>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
+builder.Services.AddScoped<ITutorProfileRepository, TutorProfileRepository>();
+builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
+
 
 // Controllers
 builder.Services.AddControllers();

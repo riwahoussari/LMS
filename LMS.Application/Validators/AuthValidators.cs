@@ -1,14 +1,13 @@
 ﻿using FluentValidation;
 using LMS.Application.DTOs;
-using LMS.Infrastructure.Seeding;
 
 namespace LMS.Application.Validators
 {
-    public class RegisterDtoValidator : AbstractValidator<RegisterDto>
+    // Register
+    public class RegisterUserBaseDtoValidator : AbstractValidator<RegisterUserBaseDto>
     {
-        public RegisterDtoValidator()
+        public RegisterUserBaseDtoValidator()
         {
-            
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required")
                 .EmailAddress().WithMessage("Invalid email format");
@@ -26,19 +25,41 @@ namespace LMS.Application.Validators
                 .WithMessage("Password must contain at least one special character");
 
 
-            RuleFor(x => x.RoleName)
-                .NotEmpty().WithMessage("Role is required")
-                .Must(r => RoleSeeder.Roles.Contains(r.ToLower()))
-                .WithMessage($"Role must be one of: {string.Join(", ", RoleSeeder.Roles)}");
-
             RuleFor(x => x.FirstName)
                 .NotEmpty().WithMessage("First Name is required");
 
             RuleFor(x => x.LastName)
                 .NotEmpty().WithMessage("Last Name is required");
+
+            RuleFor(x => x.BirthDate)
+                .Matches(@"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$").WithMessage("Birthdate should have yyyy-mm-dd format");
         }
     }
 
+    public class RegisterStudentDtoValidator : AbstractValidator<RegisterStudentDto>
+    {
+        public RegisterStudentDtoValidator()
+        {
+
+            RuleFor(x => x.Major)
+                .NotEmpty().WithMessage("Major is required");
+        }
+    }
+
+    public class RegisterTutorDtoValidator : AbstractValidator<RegisterTutorDto>
+    {
+        public RegisterTutorDtoValidator()
+        {
+            RuleFor(x => x.Bio)
+                .NotEmpty().WithMessage("Bio is required");
+
+            RuleFor(x => x.Expertise)
+                .NotEmpty().WithMessage("Expertise is required");
+        }
+    }
+
+
+    // Login
     public class LoginDtoValidator : AbstractValidator<LoginDto>
     {
         public LoginDtoValidator()
@@ -52,4 +73,14 @@ namespace LMS.Application.Validators
         }
     }
 
+
+    // Tokens
+    public class RefreshRequestDtoValidator : AbstractValidator<RefreshRequestDto>
+    {
+        public RefreshRequestDtoValidator() 
+        { 
+            RuleFor(x => x.RefreshToken).NotEmpty().WithMessage("Refresh Token is required");   
+        }
+    }
+  
 }
