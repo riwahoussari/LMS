@@ -40,6 +40,7 @@ namespace LMS.Api.Controllers
         }
 
         // ------------------- REGISTER -------------------
+        [Authorize(Roles = "admin")]
         [HttpPost("register-admin")]
         public async Task<IActionResult> RegisterAdmin(RegisterUserBaseDto dto)
         {
@@ -205,7 +206,7 @@ namespace LMS.Api.Controllers
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("FirstName", user.FirstName),
                 new Claim("LastName", user.LastName),
-                new Claim("Role", user.RoleName)
+                new Claim(ClaimTypes.Role, user.RoleName)
             };
 
 
