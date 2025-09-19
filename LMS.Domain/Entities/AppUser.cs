@@ -14,6 +14,7 @@ namespace LMS.Domain.Entities
         public required string LastName { get; set; }
         public string? BirthDate { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public bool Suspended { get; set; } = false;
 
         // Single role per user FK
         public string RoleId { get; set; } = string.Empty;        

@@ -28,17 +28,28 @@ namespace LMS.Application.Validators
         // Update
         public UserUpdateDtoValidator()
         {
-            RuleFor(x => x.FirstName)
-                .NotEmpty().WithMessage("First Name is required");
-
-            RuleFor(x => x.LastName)
-                .NotEmpty().WithMessage("Last Name is required");
 
             RuleFor(x => x.BirthDate)
-                .Matches(@"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$").WithMessage("Birthdate should have yyyy-mm-dd format");
+                .Must(birthdate => 
+                    string.IsNullOrWhiteSpace(birthdate) || 
+                    System.Text.RegularExpressions.Regex.IsMatch(birthdate, @"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$")
+                )
+                .WithMessage("Birthdate should have yyyy-mm-dd format");
+  
         }
     }
 
-    
+    public class SuspendUserDtoValidator : AbstractValidator<SuspendUserDto>
+    {
+        public SuspendUserDtoValidator()
+        {
+            RuleFor(x => x.IsSuspended)
+                .Must(isSuspended => isSuspended == true || isSuspended == false)
+                .WithMessage("IsSuspended boolean field is required");
+        }
+
+    }
+
+
 
 }

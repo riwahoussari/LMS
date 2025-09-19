@@ -27,9 +27,22 @@ namespace LMS.Application.DTOs
 
     public class UserUpdateDto
     {
-        public string FirstName { get; set; } = null!;
-        public string LastName { get; set; } = null!;
-        public string BirthDate { get; set; } = null!;
+        // all users
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? BirthDate { get; set; }
+
+        // tutor only
+        public string? Bio {get; set; }
+        public string? Expertise { get; set; }
+
+        // student only
+        public string? Major { get; set; }
+    }
+
+    public class SuspendUserDto
+    {
+        public bool IsSuspended { get; set; }
     }
 
 
@@ -42,6 +55,22 @@ namespace LMS.Application.DTOs
         public string LastName { get; set; } = null!;
         public string RoleName { get; set; } = null!;
         public string BirthDate { get; set; } = null!;
+        public bool Suspended { get; set; }
+
+        public StudentProfileResponseDto StudentProfile { get; set; } = null!;
+        public TutorProfileResponseDto TutorProfile { get; set; } = null!;
     }
 
+    public class StudentProfileResponseDto
+    {
+        public string Id { get; set; } = null!;
+        public string Major { get; set; } = null!;
+    }
+
+    public class TutorProfileResponseDto
+    {
+        public string Id { get; set; } = null!;
+        public string Bio { get; set; } = null!;
+        public string Expertise { get; set; } = null!;
+    }
 }

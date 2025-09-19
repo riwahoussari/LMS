@@ -16,6 +16,9 @@ namespace LMS.Application.Mappings
             CreateMap<AppUser, UserResponseDto>()
                 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : "unknown"));
 
+            CreateMap<StudentProfile, StudentProfileResponseDto>();
+            CreateMap<TutorProfile, TutorProfileResponseDto>();
+
             CreateMap<RefreshToken, RefreshTokenDto>();
         }
 

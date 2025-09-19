@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ namespace LMS.Infrastructure.Repositories
                 .Include(u => u.Role)
                 .Include(u => u.TutorProfile)
                 .Include(u => u.StudentProfile)
-                .FirstOrDefaultAsync( u => u.Id == id);
+                .SingleOrDefaultAsync( u => u.Id == id);
         }
 
         public async Task<IEnumerable<AppUser>> GetAllWithProfilesAsync()

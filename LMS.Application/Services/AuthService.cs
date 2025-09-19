@@ -130,7 +130,7 @@ namespace LMS.Application.Services
         // Login
         public async Task<UserResponseDto> LoginAsync(string email, string password)
         {
-            var user = await _uow.Users.FindSingleAsync(u => u.Email == email.ToLower());
+            var user = await _uow.Users.FindSingleWithProfileAsync(u => u.Email == email.ToLower());
      
             if (user == null || !await _userManager.CheckPasswordAsync(user, password))
                 throw new AuthenticationException("Invalid Credentials");

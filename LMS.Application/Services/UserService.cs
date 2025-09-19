@@ -7,6 +7,7 @@ using LMS.Common.Helpers;
 using LMS.Domain.Entities;
 using LMS.Domain.Interfaces;
 using LMS.Infrastructure;
+using LMS.Infrastructure.Constants;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
@@ -66,17 +67,43 @@ namespace LMS.Application.Services
         // UPDATE
         public async Task<UserResponseDto?> UpdateAsync(string id, UserUpdateDto dto)
         {
-            var user = await _uow.Users.GetByIdAsync(id);
+            var user = await _uow.Users.GetByIdWithProfileAsync(id);
             if (user == null) return null;
 
-            user.FirstName = dto.FirstName;
-            user.LastName = dto.LastName;
-            user.BirthDate = dto.BirthDate;
+            // common for all users
+            user.FirstName = string.IsNullOrEmpty(dto.FirstName) ? user.FirstName : dto.FirstName;
+            user.LastName = string.IsNullOrEmpty(dto.LastName) ? user.LastName : dto.LastName;
+            user.BirthDate = string.IsNullOrEmpty(dto.BirthDate) ? user.BirthDate : dto.BirthDate;
+
+            // tutor only
+            if (user.Role.Name == RoleConstants.Tutor && user.TutorProfile != null)
+            {
+                user.TutorProfile.Bio = string.IsNullOrEmpty(dto.Bio) ? user.TutorProfile.Bio : dto.Bio;
+                user.TutorProfile.Expertise = string.IsNullOrEmpty(dto.Expertise) ? user.TutorProfile.Expertise : dto.Expertise;
+            }
+
+            // student only
+            else if (user.Role.Name == RoleConstants.Student && user.StudentProfile != null)
+            {
+                user.StudentProfile.Major = string.IsNullOrEmpty(dto.Major) ? user.StudentProfile.Major : dto.Major;
+            }
 
             _uow.Users.Update(user);
             await _uow.CompleteAsync();
 
             return _mapper.Map<UserResponseDto>(user);
+        }
+
+        public async Task<int> ToggleSuspendedAsync(string id, bool isSuspended)
+        {
+            var user = await _uow.Users.GetByIdAsync(id);
+            if (user == null) return 404;
+
+            if (user.Role.Name == RoleConstants.Admin) return 403;
+
+            user.Suspended = isSuspended;
+            await _uow.CompleteAsync();
+            return 200;
         }
 
 
