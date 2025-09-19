@@ -14,7 +14,9 @@ namespace LMS.Application.Mappings
         public MappingProfile()
         {
             CreateMap<AppUser, UserResponseDto>()
-            .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name));
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : "unknown"));
+
+            CreateMap<RefreshToken, RefreshTokenDto>();
         }
 
     }

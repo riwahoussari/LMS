@@ -14,12 +14,14 @@ namespace LMS.Infrastructure
 
         public IEnrollmentRepository Enrollments { get; }
         //public ICourseRepository Courses { get; }
+        public IRefreshTokenRepository RefreshTokens { get; }
         public IUserRepository Users { get; }
         public ITutorProfileRepository TutorProfiles { get; }
         public IStudentProfileRepository StudentProfiles { get; }
 
         public UnitOfWork(AppDbContext context,
                           IEnrollmentRepository enrollments,
+                          IRefreshTokenRepository refreshTokens,
                           //ICourseRepository courses,
                           IUserRepository users,
                           ITutorProfileRepository tutorProfiles,
@@ -28,6 +30,7 @@ namespace LMS.Infrastructure
             _context = context;
             Enrollments = enrollments;
             //Courses = courses;
+            RefreshTokens = refreshTokens;
             Users = users;
             TutorProfiles = tutorProfiles;
             StudentProfiles = studentProfiles;

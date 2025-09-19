@@ -1,22 +1,14 @@
 ﻿using FluentValidation;
 using LMS.Application.DTOs;
 using LMS.Application.Interfaces;
-using LMS.Application.Services;
 using LMS.Application.Validators;
-using LMS.Domain.Entities;
-using LMS.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace LMS.Api.Controllers
@@ -27,16 +19,13 @@ namespace LMS.Api.Controllers
     {
         private readonly IConfiguration _config;
         private readonly IAuthService _authService;
-        private readonly IUserService _userService;
         
 
         public AuthController(IConfiguration config,
-                              IAuthService authService,
-                              IUserService userService)
+                              IAuthService authService)
         {
             _config = config;
             _authService = authService;
-            _userService = userService;
         }
 
         // ------------------- REGISTER -------------------

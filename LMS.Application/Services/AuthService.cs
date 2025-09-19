@@ -15,19 +15,16 @@ namespace LMS.Application.Services
 
     public class AuthService : IAuthService
     {
-        private readonly AppDbContext _db;
         private readonly IMapper _mapper;
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUnitOfWork _uow;
         
-        public AuthService(AppDbContext db, 
-                        UserManager<AppUser> userManager, 
+        public AuthService(UserManager<AppUser> userManager, 
                         IMapper mapper,
                         RoleManager<IdentityRole> roleManager,
                         IUnitOfWork uow)
         {
-            _db = db;
             _userManager = userManager;
             _roleManager = roleManager;
             _uow = uow;
@@ -132,10 +129,8 @@ namespace LMS.Application.Services
         // Login
         public async Task<UserResponseDto> LoginAsync(string email, string password)
         {
-            var user = await _db.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Email == email.ToLower());
-
+            var user = await _uow.Users.FindSingleAsync(u => u.Email == email.ToLower());
+     
             if (user == null || !await _userManager.CheckPasswordAsync(user, password))
                 throw new AuthenticationException("Invalid Credentials");
 
@@ -153,51 +148,28 @@ namespace LMS.Application.Services
                 UserId = userId,
                 ExpiresAt = DateTime.UtcNow.AddDays(7) // configurable
             };
+            
+            await _uow.RefreshTokens.AddAsync(refreshToken);
+            await _uow.CompleteAsync();
 
-            _db.RefreshTokens.Add(refreshToken);
-            await _db.SaveChangesAsync();
-
-            return new RefreshTokenDto
-            {
-                Id = refreshToken.Id,
-                Token = refreshToken.Token,
-                IsActive = refreshToken.IsActive,
-                ExpiresAt = refreshToken.ExpiresAt,
-                CreatedAt = refreshToken.CreatedAt,
-                User = _mapper.Map<UserResponseDto>(refreshToken.User)
-            };
+            return _mapper.Map<RefreshTokenDto>(refreshToken);
         }
 
         public async Task<RefreshTokenDto?> GetRefreshTokenAsync(string token, bool includeUser = false)
         {
-            var refreshToken = includeUser ? await _db.RefreshTokens
-                .Include(r => r.User)
-                .Include(r => r.User.Role)
-                .FirstOrDefaultAsync(r => r.Token == token) :
-                await _db.RefreshTokens.FirstOrDefaultAsync(r => r.Token == token);
+            var refreshToken = includeUser ? 
+                await _uow.RefreshTokens.FindFirstWithUserAsync(token) :
+                await _uow.RefreshTokens.FindFirstAsync(r => r.Token == token);
 
-            if (refreshToken == null) return null;
-
-            return new RefreshTokenDto
-            {
-                Id = refreshToken.Id,
-                Token = refreshToken.Token,
-                IsActive = refreshToken.IsActive,
-                ExpiresAt = refreshToken.ExpiresAt,
-                CreatedAt = refreshToken.CreatedAt,
-                User = includeUser ? _mapper.Map<UserResponseDto>(refreshToken.User) : null
-            };
-
+            return refreshToken == null ? null : _mapper.Map<RefreshTokenDto>(refreshToken);
         }
 
         public async Task RevokeRefreshTokenAsync(string token)
         {
-            var storedToken = await _db.RefreshTokens.FirstOrDefaultAsync(r => r.Token == token);
-            if (storedToken != null && storedToken.IsActive)
-            {
-                storedToken.RevokedAt = DateTime.UtcNow;
-                await _db.SaveChangesAsync();
-            }
+            
+            var storedToken = await _uow.RefreshTokens.FindFirstAsync(r => r.Token == token);
+            _uow.RefreshTokens.RevokeToken(storedToken);
+            await _uow.CompleteAsync();
         }
     }
 }
