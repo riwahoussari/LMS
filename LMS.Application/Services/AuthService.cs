@@ -3,6 +3,7 @@ using LMS.Application.DTOs;
 using LMS.Application.Interfaces;
 using LMS.Domain.Entities;
 using LMS.Domain.Interfaces;
+using LMS.Infrastructure.Constants;
 using LMS.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,7 @@ namespace LMS.Application.Services
         public async Task<UserResponseDto> RegisterStudentAsync(RegisterStudentDto dto)
         {
             // Create AppUser
-            var role = await _roleManager.FindByNameAsync("student");
+            var role = await _roleManager.FindByNameAsync(RoleConstants.Student);
             var user = new AppUser
             {
                 UserName = dto.Email.ToLower(),
@@ -51,7 +52,7 @@ namespace LMS.Application.Services
                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
             // Assign role
-            await _userManager.AddToRoleAsync(user, "student");
+            await _userManager.AddToRoleAsync(user, RoleConstants.Student);
 
             // Create Student Profile
             var studentProfile = new StudentProfile
@@ -69,7 +70,7 @@ namespace LMS.Application.Services
         public async Task<UserResponseDto> RegisterTutorAsync(RegisterTutorDto dto)
         {
             // Create AppUser
-            var role = await _roleManager.FindByNameAsync("tutor");
+            var role = await _roleManager.FindByNameAsync(RoleConstants.Tutor);
             var user = new AppUser
             {
                 UserName = dto.Email.ToLower(),
@@ -85,7 +86,7 @@ namespace LMS.Application.Services
                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
             // Assign role
-            await _userManager.AddToRoleAsync(user, "tutor");
+            await _userManager.AddToRoleAsync(user, RoleConstants.Tutor);
 
             // Create Tutor Profile
             var tutorProfile = new TutorProfile
@@ -103,7 +104,7 @@ namespace LMS.Application.Services
 
         public async Task<UserResponseDto> RegisterAdminAsync(RegisterUserBaseDto dto)
         {
-            var role = await _roleManager.FindByNameAsync("admin");
+            var role = await _roleManager.FindByNameAsync(RoleConstants.Admin);
             var user = new AppUser
             {
                 UserName = dto.Email.ToLower(),
@@ -119,7 +120,7 @@ namespace LMS.Application.Services
                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
             // Assign role
-            await _userManager.AddToRoleAsync(user, "admin");
+            await _userManager.AddToRoleAsync(user, RoleConstants.Admin);
 
             return _mapper.Map<UserResponseDto>(user);
 

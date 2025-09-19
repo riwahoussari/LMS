@@ -6,13 +6,6 @@ using System.Threading.Tasks;
 
 namespace LMS.Domain.Enums
 {
-    public enum Roles
-    {
-        Admin,
-        Tutor,
-        Student
-    }
-
     public enum EnrollmentStatus
     {
         Pending,

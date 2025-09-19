@@ -1,15 +1,21 @@
 ﻿using AutoMapper;
 using LMS.Application.DTOs;
 using LMS.Application.Interfaces;
+using LMS.Application.Strategies.Sorting;
 using LMS.Application.Validators;
+using LMS.Common.Helpers;
 using LMS.Domain.Entities;
 using LMS.Domain.Interfaces;
 using LMS.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,11 +25,13 @@ namespace LMS.Application.Services
     {
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
+        private readonly SortStrategyFactory<AppUser> _sorter;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, SortStrategyFactory<AppUser> sorter)
         {
             _uow = unitOfWork;
             _mapper = mapper;
+            _sorter = sorter;
         }
 
 
@@ -37,31 +45,23 @@ namespace LMS.Application.Services
             return user == null ? null : _mapper.Map<UserResponseDto>(user);
         }
 
-        public async Task<IEnumerable<UserResponseDto>> GetAllAsync(bool withProfile = false)
+        public async Task<IEnumerable<UserResponseDto>> GetAllAsync(GetUsersQueryDto dto, bool withProfile = false)
         {
-            var users = withProfile ?
-                await _uow.Users.GetAllWithProfilesAsync() :
-                await _uow.Users.GetAllAsync();
+            IQueryable<AppUser> query = withProfile
+            ? _uow.Users.QueryWithProfiles()
+            : _uow.Users.Query();
 
+            query = UserFilter.Apply(query, dto);
+            
+            if (dto.SortBy != null)
+            {
+                query = _sorter.Apply(query, dto.SortBy, dto.SortAsc != false);
+            }
+
+            var users = await query.ToListAsync();
             return _mapper.Map<IEnumerable<UserResponseDto>>(users);
         }
 
-        public async Task<IEnumerable<UserResponseDto>> GetByRoleAsync(string roleName, bool withProfile = false)
-        {
-            var users = withProfile ?
-                await _uow.Users.FindWithProfilesAsync(u => u.Role.Name == roleName) :
-                await _uow.Users.FindAsync(u => u.Role.Name == roleName);
-            return _mapper.Map<IEnumerable<UserResponseDto>>(users);
-        }
-
-        public async Task<UserResponseDto?> GetByEmailAsync(string email, bool withProfile = false)
-        {
-            AppUser? user = withProfile ?
-                await _uow.Users.FindSingleWithProfileAsync(u => u.Email == email.ToLower()) :
-                await _uow.Users.FindSingleAsync(u => u.Email == email.ToLower());
-
-            return user == null ? null : _mapper.Map<UserResponseDto>(user);
-        }
 
         // UPDATE
         public async Task<UserResponseDto?> UpdateAsync(string id, UserUpdateDto dto)
@@ -91,7 +91,29 @@ namespace LMS.Application.Services
             return true;
         }
 
-        
     }
+
+    // helpers
+    internal class UserFilter
+    {
+        public static IQueryable<AppUser> Apply(IQueryable<AppUser> query, GetUsersQueryDto dto)
+        {
+            if (!string.IsNullOrWhiteSpace(dto.Role))
+                query = query.Where(u => u.Role != null && u.Role.Name == dto.Role);
+
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                query = query.Where(u => u.Email != null &&
+                                         u.Email.ToLower().Contains(dto.Email.ToLower()));
+
+            if (!string.IsNullOrWhiteSpace(dto.FullName))
+                query = query.Where(u => u.FirstName != null && u.LastName != null &&
+                                         (u.FirstName + " " + u.LastName).ToLower()
+                                            .Contains(dto.FullName.ToLower()));
+
+            return query;
+        }
+    }
+  
+
 
 }

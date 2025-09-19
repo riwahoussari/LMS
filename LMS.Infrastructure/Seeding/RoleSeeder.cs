@@ -1,9 +1,12 @@
 ﻿using LMS.Domain.Entities;
+using LMS.Infrastructure.Constants;
 using Microsoft.AspNetCore.Identity;
 using System.Data;
 
 namespace LMS.Infrastructure.Seeding
 {
+    
+
     public class RoleSeeder
     {
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -13,10 +16,9 @@ namespace LMS.Infrastructure.Seeding
             _roleManager = roleManager;
         }
 
-        public static string[] Roles = { "admin", "tutor", "student" };
         public async Task SeedRolesAsync()
         {
-            foreach (var roleName in Roles)
+            foreach (var roleName in RoleConstants.List)
             {
                 if (!await _roleManager.RoleExistsAsync(roleName))
                 {

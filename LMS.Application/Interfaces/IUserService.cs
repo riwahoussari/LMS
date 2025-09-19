@@ -14,9 +14,8 @@ namespace LMS.Application.Interfaces
 
         // READ
         Task<UserResponseDto?> GetByIdAsync(string id, bool withProfile = false);
-        Task<IEnumerable<UserResponseDto>> GetAllAsync(bool withProfile = false);
-        Task<IEnumerable<UserResponseDto>> GetByRoleAsync(string roleName, bool withProfile = false);
-        Task<UserResponseDto?> GetByEmailAsync(string email, bool withProfile = false);
+        Task<IEnumerable<UserResponseDto>> GetAllAsync(GetUsersQueryDto dto, bool withProfile = false);
+
 
         // UPDATE
         Task<UserResponseDto?> UpdateAsync(string id, UserUpdateDto dto);

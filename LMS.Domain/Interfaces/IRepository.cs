@@ -13,6 +13,7 @@ namespace LMS.Domain.Interfaces
         Task<T?> GetByIdAsync(string id);
         Task<IEnumerable<T>> GetAllAsync();
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        IQueryable<T> Query();
         Task<T?> FindFirstAsync(Expression<Func<T, bool>> predicate);
         Task<T?> FindSingleAsync(Expression<Func<T, bool>> predicate);
 

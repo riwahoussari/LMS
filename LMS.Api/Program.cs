@@ -1,6 +1,8 @@
 using LMS.Application.Interfaces;
 using LMS.Application.Mappings;
 using LMS.Application.Services;
+using LMS.Application.Strategies.Sorting;
+using LMS.Application.Strategies.Sorting.Concrete;
 using LMS.Domain.Entities;
 using LMS.Domain.Interfaces;
 using LMS.Infrastructure;
@@ -12,6 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 
 DotNetEnv.Env.Load();
 
@@ -65,9 +68,15 @@ builder.Services.AddScoped<AdminSeeder>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
+// Sorting Strategy
+builder.Services.AddScoped<ISortStrategy<AppUser>, AgeSortStrategy>();
+builder.Services.AddScoped<ISortStrategy<AppUser>, FirstNameSortStrategy>();
+builder.Services.AddScoped<ISortStrategy<AppUser>, LastNameSortStrategy>();
+builder.Services.AddScoped<SortStrategyFactory<AppUser>>();
+
 // Repositories
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-//builder.Services.AddScoped<IRepository<object>, Repository<object>>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
 builder.Services.AddScoped<ITutorProfileRepository, TutorProfileRepository>();
@@ -75,13 +84,20 @@ builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 
 
 // Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "LMS API", Version = "v1" });
+    c.SwaggerDoc("v1", new() { Title = "LMS API", Version = "3.1.0" });
+
+    // add dropdown for choosing sort option
+    c.OperationFilter<SortStrategyOperationFilter<AppUser>>();
 
     // JWT Bearer config for Swagger
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme

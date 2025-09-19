@@ -13,6 +13,7 @@ namespace LMS.Domain.Interfaces
         Task<AppUser?> GetByIdWithProfileAsync(string id);
         Task<IEnumerable<AppUser>> GetAllWithProfilesAsync();
         Task<IEnumerable<AppUser>> FindWithProfilesAsync(Expression<Func<AppUser, bool>> predicate);
+        IQueryable<AppUser> QueryWithProfiles();
         Task<AppUser?> FindFirstWithProfileAsync(Expression<Func<AppUser, bool>> predicate);
         Task<AppUser?> FindSingleWithProfileAsync(Expression<Func<AppUser, bool>> predicate);
     }

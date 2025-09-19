@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+﻿global using static LMS.Common.Helpers.ValidationHelpers;
 using LMS.Application.DTOs;
 using LMS.Application.Interfaces;
 using LMS.Application.Validators;
@@ -10,6 +10,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text;
+using LMS.Infrastructure;
+using LMS.Infrastructure.Seeding;
+using LMS.Infrastructure.Constants;
+
 
 namespace LMS.Api.Controllers
 {
@@ -29,7 +33,7 @@ namespace LMS.Api.Controllers
         }
 
         // ------------------- REGISTER -------------------
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = RoleConstants.Admin)]
         [HttpPost("register-admin")]
         public async Task<IActionResult> RegisterAdmin(RegisterUserBaseDto dto)
         {
@@ -223,32 +227,6 @@ namespace LMS.Api.Controllers
                 User = user
             };
         }
-
-
-        // --------------------- VALIDATION HELPERS --------------------
-        private async Task<List<object>> ValidateAsync<T>(T model, params Type[] validatorTypes)
-        {
-            var errors = new List<object>();
-
-            foreach (var validatorType in validatorTypes)
-            {
-                if (Activator.CreateInstance(validatorType) is IValidator<T> validator)
-                {
-                    var result = await validator.ValidateAsync(model);
-                    if (!result.IsValid)
-                    {
-                        errors.AddRange(result.Errors.Select(e => new
-                        {
-                            Property = e.PropertyName,
-                            Error = e.ErrorMessage
-                        }));
-                    }
-                }
-            }
-
-            return errors;
-        }
-
 
     }
 }

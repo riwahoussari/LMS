@@ -1,4 +1,5 @@
-﻿using LMS.Domain.Interfaces;
+﻿using LMS.Domain.Entities;
+using LMS.Domain.Interfaces;
 using LMS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -26,8 +27,9 @@ namespace LMS.Infrastructure.Repositories
 
         public virtual async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
 
-        public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate) =>
-            await _dbSet.Where(predicate).ToListAsync();
+        public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate) => await _dbSet.Where(predicate).ToListAsync();
+
+        public virtual IQueryable<T> Query() => _dbSet.AsQueryable();
 
         public virtual async Task<T?> FindFirstAsync(Expression<Func<T, bool>> predicate) =>
             await _dbSet.Where(predicate).FirstOrDefaultAsync();
@@ -40,6 +42,8 @@ namespace LMS.Infrastructure.Repositories
         public void Update(T entity) => _dbSet.Update(entity);
 
         public void Remove(T entity) => _dbSet.Remove(entity);
+
+        
     }
 
 }

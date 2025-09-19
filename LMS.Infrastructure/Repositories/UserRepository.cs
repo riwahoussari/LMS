@@ -35,15 +35,23 @@ namespace LMS.Infrastructure.Repositories
                 .Include(u => u.StudentProfile)
                 .ToListAsync();
         }
-
-        public async Task<IEnumerable<AppUser>> FindWithProfilesAsync(Expression<Func<AppUser, bool>> predicate) 
+        
+        public async Task<IEnumerable<AppUser>> FindWithProfilesAsync(Expression<Func<AppUser, bool>> predicate)
         {
             return await _context.Users
+                    .Include(u => u.Role)
+                    .Include(u => u.TutorProfile)
+                    .Include(u => u.StudentProfile)
+                    .Where(predicate)
+                    .ToListAsync();
+        }
+
+        public IQueryable<AppUser> QueryWithProfiles()
+        {
+            return _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.TutorProfile)
-                .Include(u => u.StudentProfile)
-                .Where(predicate)
-                .ToListAsync();
+                .Include(u => u.StudentProfile);
         }
 
         public async Task<AppUser?> FindFirstWithProfileAsync(Expression<Func<AppUser, bool>> predicate) 
@@ -67,13 +75,24 @@ namespace LMS.Infrastructure.Repositories
         }
 
 
+
         // Override default Repository methods to include Role for all Users
         public override async Task<AppUser?> GetByIdAsync(string id) => await _context.Users.Include(u => u.Role).SingleOrDefaultAsync(u => u.Id == id);
 
         public override async Task<IEnumerable<AppUser>> GetAllAsync() => await _context.Users.Include(u => u.Role).ToListAsync();
 
-        public override async Task<IEnumerable<AppUser>> FindAsync(Expression<Func<AppUser, bool>> predicate) =>
-            await _context.Users.Include(u => u.Role).Where(predicate).ToListAsync();
+        public override async Task<IEnumerable<AppUser>> FindAsync(Expression<Func<AppUser, bool>> predicate)
+        {
+            return await _context.Users
+                    .Include(u => u.Role)
+                    .Where(predicate)
+                    .ToListAsync();
+        }
+
+        public override IQueryable<AppUser> Query()
+        {
+            return _context.Users.Include(u => u.Role).AsQueryable();
+        }
 
         public override async Task<AppUser?> FindFirstAsync(Expression<Func<AppUser, bool>> predicate) =>
             await _context.Users.Include(u => u.Role).Where(predicate).FirstOrDefaultAsync();
