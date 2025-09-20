@@ -1,0 +1,103 @@
+﻿using AutoMapper;
+using LMS.Application.DTOs;
+using LMS.Application.Interfaces;
+using LMS.Domain.Entities;
+using LMS.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LMS.Application.Services
+{
+    public class TagService : ITagService
+    {
+        private readonly IUnitOfWork _uow;
+        private readonly IMapper _mapper;
+
+        public TagService(IUnitOfWork uow, IMapper mapper)
+        {
+            _uow = uow;
+            _mapper = mapper;
+        }
+
+        // CREATE
+        public async Task<TagResponseDto> CreateTag(CreateTagDto dto)
+        {
+            var tag = new Tag { Name = dto.Name };
+
+            await _uow.Tag.AddAsync(tag);
+            await _uow.CompleteAsync();
+
+            return _mapper.Map<TagResponseDto>(tag);
+        }
+
+        // READ
+        public async Task<IEnumerable<TagResponseDto>> GetTags()
+        {
+            var tags = await _uow.Tag.GetAllAsync();
+            return _mapper.Map<IEnumerable<TagResponseDto>>(tags);
+        }
+
+        public async Task<TagResponseDto?> GetTag(string id)
+        {
+            if (!Guid.TryParse(id, out Guid guid))
+            {
+                throw new Exception("Invalid id");
+            }
+
+            var tag = await _uow.Tag.FindSingleAsync(t => t.Id == guid);
+
+            return tag == null ? null : _mapper.Map<TagResponseDto>(tag);
+        }
+
+        // UPDATE
+        public async Task<TagResponseDto> UpdateTag(string id, UpdateTagDto dto)
+        {
+            // Find category
+            if (!Guid.TryParse(id, out Guid guid))
+            {
+                throw new Exception("Invalid id");
+            }
+
+            var tag = await _uow.Tag.FindSingleAsync(t => t.Id == guid);
+
+            if (tag == null)
+            {
+                throw new Exception("Tag not found");
+            }
+
+            // update category
+            tag.Name = string.IsNullOrEmpty(dto.Name) ? tag.Name : dto.Name;
+
+            await _uow.CompleteAsync();
+            return _mapper.Map<TagResponseDto>(tag);
+        }
+
+        // DELETE
+        public async Task<bool> DeleteTag(string id)
+        {
+            // Find category
+            if (!Guid.TryParse(id, out Guid guid))
+            {
+                throw new Exception("Invalid id");
+            }
+
+            var tag = await _uow.Tag.FindSingleAsync(t => t.Id == guid);
+
+            if (tag == null)
+            {
+                throw new Exception("Tag not found");
+            }
+
+            // Delete category
+            _uow.Tag.Remove(tag);
+            await _uow.CompleteAsync();
+            return true;
+            
+        }  
+    }
+}

@@ -10,6 +10,7 @@ namespace LMS.Domain.Interfaces
     {
         IEnrollmentRepository Enrollments { get; }
         ICategoryRepository Category { get; }
+        ITagRepository Tag { get; }
         ICourseRepository Courses { get; }
         IRefreshTokenRepository RefreshTokens { get; }
         IUserRepository Users { get; }

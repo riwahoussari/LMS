@@ -14,6 +14,7 @@ namespace LMS.Infrastructure
 
         public IEnrollmentRepository Enrollments { get; }
         public ICategoryRepository Category { get; }
+        public ITagRepository Tag { get; }
         public ICourseRepository Courses { get; }
         public IRefreshTokenRepository RefreshTokens { get; }
         public IUserRepository Users { get; }
@@ -23,6 +24,7 @@ namespace LMS.Infrastructure
         public UnitOfWork(AppDbContext context,
                           IEnrollmentRepository enrollments,
                           ICategoryRepository category,
+                          ITagRepository tag,
                           IRefreshTokenRepository refreshTokens,
                           ICourseRepository courses,
                           IUserRepository users,
@@ -32,6 +34,7 @@ namespace LMS.Infrastructure
             _context = context;
             Enrollments = enrollments;
             Category = category;
+            Tag = tag;
             Courses = courses;
             RefreshTokens = refreshTokens;
             Users = users;

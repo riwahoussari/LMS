@@ -22,8 +22,9 @@ namespace LMS.Application.Mappings
 
             CreateMap<RefreshToken, RefreshTokenDto>();
 
-            // Categories
+            // Categories - Tags
             CreateMap<Category, CategoryResponseDto>();
+            CreateMap<Tag, TagResponseDto>();
         }
 
     }
