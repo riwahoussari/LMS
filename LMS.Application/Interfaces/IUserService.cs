@@ -19,7 +19,7 @@ namespace LMS.Application.Interfaces
 
         // UPDATE
         Task<UserResponseDto?> UpdateAsync(string id, UserUpdateDto dto);
-        Task<int> ToggleSuspendedAsync(string id, bool isSuspended);
+        Task<bool> ToggleSuspendedAsync(string id, bool isSuspended);
 
         // DELETE
         Task<bool> DeleteAsync(string id);

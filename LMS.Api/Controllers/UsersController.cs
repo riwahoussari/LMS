@@ -87,14 +87,20 @@ namespace LMS.Api.Controllers
 
 
             // suspend user
-            int result = await _userService.ToggleSuspendedAsync(id, dto.IsSuspended);
+            try
+            {
+                await _userService.ToggleSuspendedAsync(id, dto.IsSuspended);
+                return Ok(dto.IsSuspended ? "User suspended" : "User Unsuspended");
+            }
+            catch (Exception ex)
+            {
+                if (ex is UnauthorizedAccessException) return Forbid();
+                else if (ex is KeyNotFoundException) return NotFound("User not found");
+                return BadRequest(ex.Message);
+            }
+        }   
 
-            if (result == 404) return NotFound("User not found");
 
-            if (result == 403) return Forbid();
-
-            return Ok(dto.IsSuspended ? "User suspended" : "User Unsuspended");
-        }
 
         [Authorize]
         [HttpPatch("me")]

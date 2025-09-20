@@ -94,16 +94,16 @@ namespace LMS.Application.Services
             return _mapper.Map<UserResponseDto>(user);
         }
 
-        public async Task<int> ToggleSuspendedAsync(string id, bool isSuspended)
+        public async Task<bool> ToggleSuspendedAsync(string id, bool isSuspended)
         {
             var user = await _uow.Users.GetByIdAsync(id);
-            if (user == null) return 404;
+            if (user == null) throw new KeyNotFoundException("User not found");
 
-            if (user.Role.Name == RoleConstants.Admin) return 403;
+            if (user.Role.Name == RoleConstants.Admin) throw new UnauthorizedAccessException("Forbidden");
 
             user.Suspended = isSuspended;
             await _uow.CompleteAsync();
-            return 200;
+            return true;
         }
 
 
