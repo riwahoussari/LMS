@@ -67,6 +67,8 @@ builder.Services.AddScoped<AdminSeeder>();
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 // Sorting Strategy
 builder.Services.AddScoped<ISortStrategy<AppUser>, AgeSortStrategy>();
@@ -80,6 +82,9 @@ builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
 builder.Services.AddScoped<ITutorProfileRepository, TutorProfileRepository>();
+
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 
 

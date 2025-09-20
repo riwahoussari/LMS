@@ -13,6 +13,7 @@ namespace LMS.Application.Mappings
     {
         public MappingProfile()
         {
+            // Auth - Users - Profiles
             CreateMap<AppUser, UserResponseDto>()
                 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : "unknown"));
 
@@ -20,6 +21,9 @@ namespace LMS.Application.Mappings
             CreateMap<TutorProfile, TutorProfileResponseDto>();
 
             CreateMap<RefreshToken, RefreshTokenDto>();
+
+            // Categories
+            CreateMap<Category, CategoryResponseDto>();
         }
 
     }

@@ -13,7 +13,8 @@ namespace LMS.Infrastructure
         private readonly AppDbContext _context;
 
         public IEnrollmentRepository Enrollments { get; }
-        //public ICourseRepository Courses { get; }
+        public ICategoryRepository Category { get; }
+        public ICourseRepository Courses { get; }
         public IRefreshTokenRepository RefreshTokens { get; }
         public IUserRepository Users { get; }
         public ITutorProfileRepository TutorProfiles { get; }
@@ -21,15 +22,17 @@ namespace LMS.Infrastructure
 
         public UnitOfWork(AppDbContext context,
                           IEnrollmentRepository enrollments,
+                          ICategoryRepository category,
                           IRefreshTokenRepository refreshTokens,
-                          //ICourseRepository courses,
+                          ICourseRepository courses,
                           IUserRepository users,
                           ITutorProfileRepository tutorProfiles,
                           IStudentProfileRepository studentProfiles)
         {
             _context = context;
             Enrollments = enrollments;
-            //Courses = courses;
+            Category = category;
+            Courses = courses;
             RefreshTokens = refreshTokens;
             Users = users;
             TutorProfiles = tutorProfiles;

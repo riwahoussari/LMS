@@ -168,13 +168,6 @@ namespace LMS.Infrastructure.Persistence
                 .HasForeignKey(c => c.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict); // can't delete category if courses are using it
 
-            // Category -> ParentCategory (many-to-one)
-            builder.Entity<Category>()
-                .HasOne(c => c.Parent)
-                .WithMany(parent => parent.Children)
-                .HasForeignKey(c => c.ParentId)
-                .OnDelete(DeleteBehavior.Restrict); // can't delete a category if it has children
-
 
             // Course -> Tag (many-to-many)
             builder.Entity<Course>()
@@ -210,7 +203,6 @@ namespace LMS.Infrastructure.Persistence
 
             // Category hierarchy queries
             builder.Entity<Category>().HasIndex(c => c.Name).HasDatabaseName("IX_Categories_Name");
-            builder.Entity<Category>().HasIndex(c => c.ParentId).HasDatabaseName("IX_Categories_ParentId");
 
             // Tag search
             builder.Entity<Tag>().HasIndex(t => t.Name).HasDatabaseName("IX_Tags_Name");

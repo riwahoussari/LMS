@@ -9,7 +9,8 @@ namespace LMS.Domain.Interfaces
     public interface IUnitOfWork : IDisposable
     {
         IEnrollmentRepository Enrollments { get; }
-        //ICourseRepository Courses { get; }
+        ICategoryRepository Category { get; }
+        ICourseRepository Courses { get; }
         IRefreshTokenRepository RefreshTokens { get; }
         IUserRepository Users { get; }
         ITutorProfileRepository TutorProfiles { get; }
