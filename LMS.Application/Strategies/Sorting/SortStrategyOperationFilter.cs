@@ -1,4 +1,5 @@
-﻿using Microsoft.OpenApi.Any;
+﻿using LMS.Domain.Entities;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
@@ -9,67 +10,89 @@ using System.Threading.Tasks;
 
 namespace LMS.Application.Strategies.Sorting
 {
-    public class SortStrategyOperationFilter<T> : IOperationFilter
-        where T : class
+
+    public static class TypeExtensions
+    {
+        public static bool ImplementsGenericInterface(this Type type, Type genericInterface)
+        {
+            return type.GetInterfaces()
+                .Any(i => i.IsGenericType &&
+                          i.GetGenericTypeDefinition() == genericInterface);
+        }
+    }
+
+
+    public class SortStrategyOperationFilter : IOperationFilter
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
             if (operation.Parameters == null || !operation.Parameters.Any()) return;
 
-            // match query parameter name (case-insensitive)
             var param = operation.Parameters
                 .FirstOrDefault(p => string.Equals(p.Name, "sortBy", StringComparison.OrdinalIgnoreCase));
-
             if (param == null) return;
 
-            // discover strategy types (search all loaded assemblies)
+            // Detect entity type from controller name (could also use custom attribute)
+            var controllerName = context.ApiDescription.ActionDescriptor.RouteValues["controller"];
+            Type? targetEntity = controllerName switch
+            {
+                "Users" => typeof(AppUser),
+                "Courses" => typeof(Course),
+                _ => null
+            };
+            if (targetEntity == null) return;
+
+            // Find strategies for this entity
             var strategyTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(a =>
                 {
                     try { return a.GetTypes(); }
                     catch { return Array.Empty<Type>(); }
                 })
-                .Where(t => typeof(ISortStrategy<T>).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+                .Where(t => !t.IsInterface && !t.IsAbstract)
+                .Where(t => t.ImplementsGenericInterface(typeof(ISortStrategy<>)))
+                .Where(t => t.GetInterfaces().Any(i =>
+                    i.IsGenericType &&
+                    i.GetGenericTypeDefinition() == typeof(ISortStrategy<>) &&
+                    i.GetGenericArguments()[0] == targetEntity))
                 .ToList();
 
             var values = new List<string>();
-
             foreach (var t in strategyTypes)
             {
-
-                // try to instantiate and get Key property
-                try
+                if (Activator.CreateInstance(t) is ISortStrategy s &&
+                    !string.IsNullOrWhiteSpace(s.Key))
                 {
-                    if (Activator.CreateInstance(t) is ISortStrategy<T> s)
-                    {
-                        if (!string.IsNullOrWhiteSpace(s.Key))
-                            values.Add(s.Key);
-                        continue;
-                    }
+                    values.Add(s.Key);
                 }
-                catch
-                {
-                    // ignore
-                }
-
-                // fallback: strip "SortStrategy" from type name
-                var name = t.Name.Replace("SortStrategy", "", StringComparison.OrdinalIgnoreCase);
-                if (!string.IsNullOrWhiteSpace(name))
-                    values.Add(name);
             }
+
+            if (!values.Any()) return;
 
             values = values
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(v => v, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            // ensure parameter schema exists and is string typed
             param.Schema ??= new OpenApiSchema { Type = "string" };
-            param.Schema.Type = "string";
-
-            // set the enum values shown in Swagger
-            param.Schema.Enum = values.Select(v => new OpenApiString(v) as IOpenApiAny).ToList();
-
+            param.Schema.Enum = values.Select(v => (IOpenApiAny)new OpenApiString(v)).ToList();
         }
+
+
+        private Type? DetectEntityType(OperationFilterContext context)
+        {
+            // Example: check the controller or return type
+            var controllerName = context.ApiDescription.ActionDescriptor.RouteValues["controller"];
+
+            return controllerName switch
+            {
+                "Users" => typeof(ISortStrategy<AppUser>),
+                "Courses" => typeof(ISortStrategy<Course>),
+                _ => null
+            };
+        }
+
+        
+
     }
 }

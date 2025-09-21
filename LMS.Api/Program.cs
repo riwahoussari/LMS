@@ -77,6 +77,11 @@ builder.Services.AddScoped<ISortStrategy<AppUser>, FirstNameSortStrategy>();
 builder.Services.AddScoped<ISortStrategy<AppUser>, LastNameSortStrategy>();
 builder.Services.AddScoped<SortStrategyFactory<AppUser>>();
 
+builder.Services.AddScoped<ISortStrategy<Course>, TitleSortStrategy>();
+builder.Services.AddScoped<ISortStrategy<Course>, EnrollmentsSortStrategy>();
+builder.Services.AddScoped<ISortStrategy<Course>, SpotsLeftSortStrategy>();
+builder.Services.AddScoped<SortStrategyFactory<Course>>();
+
 // Repositories
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
@@ -108,7 +113,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "LMS API", Version = "3.1.0" });
 
     // add dropdown for choosing sort option
-    c.OperationFilter<SortStrategyOperationFilter<AppUser>>();
+    c.OperationFilter<SortStrategyOperationFilter>();
 
     // JWT Bearer config for Swagger
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme

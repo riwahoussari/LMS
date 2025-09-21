@@ -73,4 +73,13 @@ namespace LMS.Application.DTOs
         public string Bio { get; set; } = null!;
         public string Expertise { get; set; } = null!;
     }
+
+    public class TutorProfileExtendedResponseDto : TutorProfileResponseDto
+    { 
+        public string UserId { get; set; } = null!;
+        public string FirstName { get; set; } = null!;
+        public string LastName { get; set; } = null!;
+        public string Email { get; set; } = null!;
+    }
+
 }

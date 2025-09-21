@@ -35,6 +35,7 @@ namespace LMS.Application.Services
         // Register
         public async Task<UserResponseDto> RegisterStudentAsync(RegisterStudentDto dto)
         {
+            
             // Create AppUser
             var role = await _roleManager.FindByNameAsync(RoleConstants.Student);
             var user = new AppUser

@@ -19,6 +19,11 @@ namespace LMS.Application.Mappings
 
             CreateMap<StudentProfile, StudentProfileResponseDto>();
             CreateMap<TutorProfile, TutorProfileResponseDto>();
+            CreateMap<TutorProfile, TutorProfileExtendedResponseDto>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.User.Id))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email));
 
             CreateMap<RefreshToken, RefreshTokenDto>();
 
@@ -27,8 +32,9 @@ namespace LMS.Application.Mappings
             CreateMap<Tag, TagResponseDto>();
 
             // Courses
-            CreateMap<Course, CourseResponseDto>();
             CreateMap<Course, PrerequisiteCourseResponseDto>();
+            CreateMap<Course, CourseResponseDto>()
+                .ForMember(dest => dest.Prerequisites, opt => opt.MapFrom(src => src.Prerequisites.Select(p => p.PrerequisiteCourse)));
 
             // Schedules
             CreateMap<Schedule, ScheduleResponseDto>();
