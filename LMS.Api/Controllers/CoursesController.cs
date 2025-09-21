@@ -164,7 +164,6 @@ namespace LMS.Api.Controllers
 
         // DELETE
         [Authorize(Roles = RoleConstants.Admin + " , " + RoleConstants.Tutor)]
-        //[Authorize(Roles = RoleConstants.Tutor)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> ArchiveCourse(string id)
         {
@@ -187,14 +186,35 @@ namespace LMS.Api.Controllers
         [HttpPost("{id}/tutors")]
         public async Task<IActionResult> AssignTutor(string id, [FromForm] string tutorId)
         {
-
-            return Ok();
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var course = await _courseService.AssignTutor(id: id, tutorId: tutorId, requesterId: currentUserId);
+                return Ok(course);
+            }
+            catch (Exception ex)
+            {
+                if (ex is KeyNotFoundException) return NotFound(ex.Message);
+                if (ex is UnauthorizedAccessException) return Forbid();
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{id}/tutors")]
         public async Task<IActionResult> UnassignTutor(string id, [FromForm] string tutorId)
         {
-            return Ok();
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var course = await _courseService.UnassignTutor(id: id, tutorId: tutorId, requesterId: currentUserId);
+                return Ok(course);
+            }
+            catch (Exception ex)
+            {
+                if (ex is KeyNotFoundException) return NotFound(ex.Message);
+                if (ex is UnauthorizedAccessException) return Forbid();
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

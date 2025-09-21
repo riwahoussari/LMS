@@ -295,10 +295,13 @@ namespace LMS.Application.Services
                 throw new UnauthorizedAccessException("Forbidden");
 
             // unassign tutor
-            var toBeRemovedTutor = course.TutorProfiles.First(tp => tp.User.Id == tutorId);
+            var toBeRemovedTutor = course.TutorProfiles.FirstOrDefault(tp => tp.User.Id == tutorId);
 
             if (toBeRemovedTutor == null)
                 throw new KeyNotFoundException("Tutor Not Found");
+
+            if (course.TutorProfiles.Count() == 1)
+                throw new Exception("Cannot Unassign the only tutor. A course must always have at least one assigned tutor.");
 
             course.TutorProfiles.Remove(toBeRemovedTutor);
 
