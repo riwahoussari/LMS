@@ -25,6 +25,15 @@ namespace LMS.Application.Mappings
             // Categories - Tags
             CreateMap<Category, CategoryResponseDto>();
             CreateMap<Tag, TagResponseDto>();
+
+            // Courses
+            CreateMap<Course, CourseResponseDto>();
+            CreateMap<Course, PrerequisiteCourseResponseDto>();
+
+            // Schedules
+            CreateMap<Schedule, ScheduleResponseDto>();
+            CreateMap<ScheduleSession, ScheduleSessionResponseDto>();
+
         }
 
     }

@@ -58,6 +58,7 @@ namespace LMS.Infrastructure.Persistence
             builder.Entity<NotificationRecipient>().ToTable("NotificationRecipients", "lms");
 
 
+
             //// ENUM STRING MAPPING
 
             builder.Entity<Course>()
@@ -197,15 +198,15 @@ namespace LMS.Infrastructure.Persistence
             // ==== SEARCH AND FILTERING INDEXES ====
 
             // Course search and filtering (most important)
-            builder.Entity<Course>().HasIndex(c => c.Title).HasDatabaseName("IX_Courses_Title");
+            builder.Entity<Course>().HasIndex(c => c.Title).IsUnique().HasDatabaseName("IX_Courses_Title");
             builder.Entity<Course>().HasIndex(c => c.CategoryId).HasDatabaseName("IX_Courses_CategoryId");
             builder.Entity<Course>().HasIndex(c => new { c.Status, c.CategoryId }).HasDatabaseName("IX_Courses_Status_CategoryId");
 
             // Category hierarchy queries
-            builder.Entity<Category>().HasIndex(c => c.Name).HasDatabaseName("IX_Categories_Name");
+            builder.Entity<Category>().HasIndex(c => c.Name).IsUnique().HasDatabaseName("IX_Categories_Name");
 
             // Tag search
-            builder.Entity<Tag>().HasIndex(t => t.Name).HasDatabaseName("IX_Tags_Name");
+            builder.Entity<Tag>().HasIndex(t => t.Name).IsUnique().HasDatabaseName("IX_Tags_Name");
 
             // User authentication and profile lookups
             builder.Entity<AppUser>().HasIndex(u => u.Email).IsUnique().HasDatabaseName("IX_AppUsers_Email");

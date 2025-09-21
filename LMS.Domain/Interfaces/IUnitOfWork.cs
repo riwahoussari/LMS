@@ -8,10 +8,21 @@ namespace LMS.Domain.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
+        // Enrollments
         IEnrollmentRepository Enrollments { get; }
+
+        // Schedules
+        IScheduleRepository Schedules { get; }
+        IScheduleSessionRepository ScheduleSessions { get; }
+
+        // Courses
         ICategoryRepository Category { get; }
         ITagRepository Tag { get; }
+
         ICourseRepository Courses { get; }
+        IPrerequisiteRepository Prerequisites { get; }
+
+        // Auth - Users
         IRefreshTokenRepository RefreshTokens { get; }
         IUserRepository Users { get; }
         ITutorProfileRepository TutorProfiles { get; }

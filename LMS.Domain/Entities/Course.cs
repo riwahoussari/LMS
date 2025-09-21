@@ -1,9 +1,10 @@
-﻿using System;
+﻿using LMS.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using LMS.Domain.Enums;
 
 namespace LMS.Domain.Entities
 {

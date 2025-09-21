@@ -10,8 +10,8 @@ namespace LMS.Domain.Entities
     {
         public Guid Id { get; set; }
 
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public required string StartDate { get; set; }
+        public required string EndDate { get; set; }
 
         // one-to-many relashionship to Courses
         public ICollection<Course> Courses { get; set; } = new List<Course>();

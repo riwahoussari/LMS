@@ -1,4 +1,5 @@
-﻿using LMS.Domain.Entities;
+﻿using LMS.Application.DTOs;
+using LMS.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace LMS.Application.Interfaces
 {
     public interface ICourseService
     {
-        //Task<Course> CreateCourseAsync(CreateCourseDto dto);
+        Task<CourseResponseDto> CreateCourseAsync(string tutorId, CreateCourseDto dto);
         //Task<Course?> GetCourseByIdAsync(Guid id);
         //Task<IEnumerable<Course>> GetCoursesAsync();
         //Task UpdateCourseAsync(UpdateCourseDto dto);
