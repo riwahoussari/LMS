@@ -158,7 +158,15 @@ namespace LMS.Application.Services
                     }
 
                     if (dto.Schedule != null)
+                    {
+                        foreach (var session in course.Schedule.Sessions)
+                        {
+                            _uow.ScheduleSessions.Remove(session);
+                        }
+                        var oldSchedule = course.Schedule;
                         await CreateAndAssignSchedule(dto.Schedule, course);
+                        _uow.Schedules.Remove(oldSchedule);
+                    }
 
                     if (dto.PrerequisiteIds != null)
                     {
@@ -202,6 +210,7 @@ namespace LMS.Application.Services
             try
             {
                 await _uow.CompleteAsync();
+                return _mapper.Map<CourseResponseDto>(course);
             }
             catch (DbUpdateException ex)
             {
@@ -224,7 +233,6 @@ namespace LMS.Application.Services
                 // Re-throw if it's not a PostgreSQL exception
                 throw;
             }
-            return _mapper.Map<CourseResponseDto>(course);
         }
 
         // DELETE

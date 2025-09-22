@@ -4,6 +4,7 @@ using LMS.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,13 +33,17 @@ namespace LMS.Application.Mappings
             CreateMap<Tag, TagResponseDto>();
 
             // Courses
-            CreateMap<Course, PrerequisiteCourseResponseDto>();
+            CreateMap<Course, PartialCourseResponseDto>();
             CreateMap<Course, CourseResponseDto>()
                 .ForMember(dest => dest.Prerequisites, opt => opt.MapFrom(src => src.Prerequisites.Select(p => p.PrerequisiteCourse)));
 
             // Schedules
             CreateMap<Schedule, ScheduleResponseDto>();
             CreateMap<ScheduleSession, ScheduleSessionResponseDto>();
+
+            // Enrollments
+            CreateMap<Enrollment, EnrollmentResponseDto>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Student.User.Id));
 
         }
 

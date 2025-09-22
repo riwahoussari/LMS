@@ -1,11 +1,14 @@
 ﻿using LMS.Domain.Entities;
 using LMS.Domain.Interfaces;
 using LMS.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using static FluentValidation.Validators.PredicateValidator;
 
 namespace LMS.Infrastructure.Repositories
 {
@@ -15,19 +18,42 @@ namespace LMS.Infrastructure.Repositories
         {
         }
 
-        public Task<IEnumerable<Enrollment>> GetByCourseAsync(Guid courseId)
+        public virtual async Task<IEnumerable<Enrollment>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                .Include(e => e.Course)
+                .Include(e => e.Student)
+                    .ThenInclude(sp => sp.User)
+                .ToListAsync();
         }
 
-        public Task<IEnumerable<Enrollment>> GetByStatusAsync(string status)
+        public override async Task<Enrollment?> FindFirstAsync(Expression<Func<Enrollment, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                .Include(e => e.Course)
+                .Include(e => e.Student)
+                    .ThenInclude(sp => sp.User)
+                .Where(predicate).FirstOrDefaultAsync();
         }
 
-        public Task<IEnumerable<Enrollment>> GetByStudentAsync(Guid studentId)
+        public override async Task<IEnumerable<Enrollment>> FindAsync(Expression<Func<Enrollment, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                .Include(e => e.Course)
+                .Include(e => e.Student)
+                    .ThenInclude(sp => sp.User)
+                .Where(predicate)
+                .ToListAsync();
         }
+
+        public override async Task<Enrollment?> FindSingleAsync(Expression<Func<Enrollment, bool>> predicate)
+        {
+            return await _dbSet
+                .Include(e => e.Course)
+                .Include(e => e.Student)
+                    .ThenInclude(sp => sp.User)
+                .Where(predicate).SingleOrDefaultAsync();
+        }
+
     }
 }

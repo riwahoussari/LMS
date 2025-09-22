@@ -1,4 +1,5 @@
-﻿using LMS.Domain.Entities;
+﻿using LMS.Application.DTOs;
+using LMS.Domain.Entities;
 using LMS.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -10,8 +11,18 @@ namespace LMS.Application.Interfaces
 {
     public interface IEnrollmentService
     {
-        Task<Enrollment> EnrollAsync(Guid studentProfileId, Guid courseId);
-        Task<IEnumerable<Enrollment>> GetEnrollmentsByStudentAsync(Guid studentProfileId);
-        Task UpdateEnrollmentStatusAsync(Guid studentProfileId, Guid courseId, EnrollmentStatus status);
+        // CREATE
+        Task<EnrollmentResponseDto> EnrollAsync(string studentUserId, string courseId);
+
+        // READ
+        Task<IEnumerable<EnrollmentResponseDto>> GetAllAsync();
+        Task<EnrollmentResponseDto> GetOneAsync(string courseId, string studentProfileId, string requesterId);
+        Task<IEnumerable<EnrollmentResponseDto>> GetByStudentAsync(string studentProfileId, EnrollmentStatus? statusFilter);
+        Task<IEnumerable<EnrollmentResponseDto>> GetMyEnrollmentsAsync(string studentId, EnrollmentStatus? statusFilter);
+        Task<IEnumerable<EnrollmentResponseDto>> GetByCourseAsync(string courseId);
+
+        // Update
+        Task<EnrollmentResponseDto> UpdateAsync(string courseId, string studentProfileId, string requesterId, EnrollmentStatus status);
+        //Task UpdateEnrollmentStatusAsync(Guid studentProfileId, Guid courseId, EnrollmentStatus status);
     }
 }

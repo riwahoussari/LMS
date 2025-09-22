@@ -56,11 +56,11 @@ namespace LMS.Application.DTOs
         public CategoryResponseDto Category { get; set; } = null!;
         public ScheduleResponseDto Schedule { get; set; } = null!;
         public TagResponseDto[] Tags { get; set; } = null!;
-        public PrerequisiteCourseResponseDto[] Prerequisites { get; set; } = null!;
+        public PartialCourseResponseDto[] Prerequisites { get; set; } = null!;
         public string CreatedAt { get; set; } = null!;
     }
 
-    public class PrerequisiteCourseResponseDto
+    public class PartialCourseResponseDto
     {
         public string Id { get; set; } = null!;
         public string Title { get; set; } = null!;
