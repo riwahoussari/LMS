@@ -29,6 +29,8 @@ namespace LMS.Application.DTOs
         public string[]? TagIds { get; set; }
         public string? SortBy { get; set; }
         public bool? SortAsc { get; set; }
+        public int? Limit { get; set; }
+        public int? Offset { get; set; }
     }
 
     // Update

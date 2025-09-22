@@ -89,6 +89,10 @@ namespace LMS.Application.Services
                 query = _sorter.Apply(query, dto.SortBy, dto.SortAsc != false);
             }
 
+            // Apply pagination (limit + offset)
+            if (dto.Offset.HasValue) query = query.Skip(dto.Offset.Value);
+            if (dto.Limit.HasValue) query = query.Take(dto.Limit.Value);
+
             var courses = await query.ToListAsync();
             return _mapper.Map<IEnumerable<CourseResponseDto>>(courses);
         }

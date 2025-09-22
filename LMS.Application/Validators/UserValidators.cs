@@ -19,6 +19,14 @@ namespace LMS.Application.Validators
                 .Must(r => string.IsNullOrEmpty(r) || RoleConstants.List.Contains(r.ToLower()))
                 .WithMessage("Invalid role specified.");
 
+            RuleFor(x => x.Limit)
+                .Must(l => l == null || l > 0)
+                .WithMessage("Limit must be bigger than 0");
+
+            RuleFor(x => x.Offset)
+                .Must(o => o == null || o > 0)
+                .WithMessage("Offset must be bigger than 0");
+
         }
     }
 

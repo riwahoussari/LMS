@@ -32,7 +32,13 @@ namespace LMS.Application.Validators
     {
         public GetCoursesQueryDtoValidator()
         {
+            RuleFor(x => x.Limit)
+                .Must(l => l == null || l > 0)
+                .WithMessage("Limit must be bigger than 0");
 
+            RuleFor(x => x.Offset)
+                .Must(o => o == null || o > 0)
+                .WithMessage("Offset must be bigger than 0");
         }
         
 
