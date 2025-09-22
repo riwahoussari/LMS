@@ -74,7 +74,7 @@ namespace LMS.Api.Controllers
         /// - Requires authentication.  
         /// - **Admins** can query all courses with any status.  
         /// - **Non-admins** can only view courses with status `Published`.  
-        /// - Use query parameters to filter and paginate results.  
+        /// - Use query parameters to filter, sort and paginate results.  
         /// </remarks>
         [Authorize]
         [HttpGet]
