@@ -9,6 +9,7 @@ namespace LMS.Domain.Interfaces
 {
     public interface IRepository<T> where T : class
     {
+        Task<int> CountAsync(Expression<Func<T, bool>> predicate);
         Task<T?> GetByIdAsync(Guid id);
         Task<T?> GetByIdAsync(string id);
         Task<IEnumerable<T>> GetAllAsync();

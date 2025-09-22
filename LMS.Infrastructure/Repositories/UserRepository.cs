@@ -76,7 +76,6 @@ namespace LMS.Infrastructure.Repositories
         }
 
 
-
         // Override default Repository methods to include Role for all Users
         public override async Task<AppUser?> GetByIdAsync(string id) => await _context.Users.Include(u => u.Role).SingleOrDefaultAsync(u => u.Id == id);
 
@@ -100,5 +99,7 @@ namespace LMS.Infrastructure.Repositories
 
         public override async Task<AppUser?> FindSingleAsync(Expression<Func<AppUser, bool>> predicate) =>
             await _context.Users.Include(u => u.Role).Where(predicate).SingleOrDefaultAsync();
+
+        
     }
 }

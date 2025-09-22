@@ -71,6 +71,8 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+
 
 // Sorting Strategy
 builder.Services.AddScoped<ISortStrategy<AppUser>, AgeSortStrategy>();
