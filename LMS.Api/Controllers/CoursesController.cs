@@ -7,6 +7,7 @@ using LMS.Infrastructure.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
@@ -24,8 +25,20 @@ namespace LMS.Api.Controllers
         }
 
         // CREATE
+        /// <summary>
+        /// Create a new course (Tutor only).
+        /// </summary>
+        /// <remarks>
+        /// - Requires **Tutor** role.  
+        /// - The authenticated tutor is automatically assigned to the course.  
+        /// - Returns the created course details.  
+        /// </remarks>
         [Authorize(Roles = RoleConstants.Tutor)]
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CourseResponseDto))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
+        [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
+        [SwaggerResponse(statusCode: 403, description: "User authenticated but not a Tutor")]
         public async Task<IActionResult> CreateCourse(CreateCourseDto dto)
         {
             // get user id
@@ -54,8 +67,20 @@ namespace LMS.Api.Controllers
 
 
         // READ
+        /// <summary>
+        /// Get a list of courses.
+        /// </summary>
+        /// <remarks>
+        /// - Requires authentication.  
+        /// - **Admins** can query all courses with any status.  
+        /// - **Non-admins** can only view courses with status `Published`.  
+        /// - Use query parameters to filter and paginate results.  
+        /// </remarks>
         [Authorize]
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CourseResponseDto>))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
+        [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
         public async Task<IActionResult> GetCourses([FromQuery] GetCoursesQueryDto query)
         {
             // data validation
@@ -84,8 +109,21 @@ namespace LMS.Api.Controllers
         }
 
 
+        /// <summary>
+        /// Get a course by ID.
+        /// </summary>
+        /// <remarks>
+        /// - Requires authentication.  
+        /// - **Published** courses are visible to all authenticated users.  
+        /// - **Non-published** courses are visible only to **Admins** and **Assigned Tutors**.  
+        /// - Returns course details if accessible.  
+        /// </remarks>
         [Authorize]
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CourseResponseDto))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
+        [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
+        [SwaggerResponse(statusCode: 404, description: "Course not found (can also mean that a user is unauthorized to access the specified course)")]
         public async Task<IActionResult> GetCourse(string id)
         {
             CourseResponseDto? course;
@@ -118,8 +156,21 @@ namespace LMS.Api.Controllers
 
 
         // UPDATE
+        /// <summary>
+        /// Publish a course (Admin only).
+        /// </summary>
+        /// <remarks>
+        /// - Requires **Admin** role.  
+        /// - Sets the course status to `Published`.  
+        /// - Returns the updated course.  
+        /// </remarks>
         [Authorize(Roles = RoleConstants.Admin)]
         [HttpPatch("{id}/publish")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CourseResponseDto))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
+        [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
+        [SwaggerResponse(statusCode: 403, description: "User authenticated but not an Admin")]
+        [SwaggerResponse(statusCode: 404, description: "Course not found")]
         public async Task<IActionResult> PublishCourse(string id)
         {
             try
@@ -135,8 +186,21 @@ namespace LMS.Api.Controllers
 
         }
 
+        /// <summary>
+        /// Update a course (assigned Tutor only).
+        /// </summary>
+        /// <remarks>
+        /// - Requires **Tutor** role.  
+        /// - Tutors can only update courses they are assigned to.  
+        /// - Returns the updated course details.  
+        /// </remarks>
         [Authorize(Roles = RoleConstants.Tutor)]
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CourseResponseDto))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
+        [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
+        [SwaggerResponse(statusCode: 403, description: "User authenticated but not an assigned Tutor to this course")]
+        [SwaggerResponse(statusCode: 404, description: "Course not found")]
         public async Task<IActionResult> UpdateCourse(string id, UpdateCourseDto dto)
         {
             // data validation
@@ -163,8 +227,21 @@ namespace LMS.Api.Controllers
         }
 
         // DELETE
+        /// <summary>
+        /// Archive (soft-delete) a course (Admin/assigned Tutor).
+        /// </summary>
+        /// <remarks>
+        /// - Requires **Admin** or **Tutor** role.  
+        /// - **Admins** can archive any course.  
+        /// - **Tutors** can only archive courses they are assigned to.  
+        /// - Returns the archived course details.  
+        /// </remarks>
         [Authorize(Roles = RoleConstants.Admin + " , " + RoleConstants.Tutor)]
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CourseResponseDto))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
+        [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
+        [SwaggerResponse(statusCode: 404, description: "Course not found")]
         public async Task<IActionResult> ArchiveCourse(string id)
         {
             var currentUserId = User.IsInRole(RoleConstants.Tutor) ? User.FindFirstValue(ClaimTypes.NameIdentifier) : null;
@@ -177,7 +254,6 @@ namespace LMS.Api.Controllers
             catch (Exception ex)
             {
                 if (ex is KeyNotFoundException) return NotFound(ex.Message);
-                //if (ex is UnauthorizedAccessException) return Forbid();
                 return BadRequest(ex.Message);
             }
         }
