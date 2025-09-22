@@ -23,8 +23,6 @@ namespace LMS.Infrastructure.Persistence
         public DbSet<Category> Categories { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
-        public DbSet<Notification> Notifications { get; set; }
-        public DbSet<NotificationRecipient> NotificationRecipients { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -54,8 +52,6 @@ namespace LMS.Infrastructure.Persistence
             builder.Entity<Prerequisite>().ToTable("Prerequisites", "lms");
             builder.Entity<Category>().ToTable("Categories", "lms");
             builder.Entity<Tag>().ToTable("Tags", "lms");
-            builder.Entity<Notification>().ToTable("Notifications", "lms");
-            builder.Entity<NotificationRecipient>().ToTable("NotificationRecipients", "lms");
 
 
 
@@ -83,8 +79,6 @@ namespace LMS.Infrastructure.Persistence
             // Prerequisite composite PK
             builder.Entity<Prerequisite>().HasKey(p => new { p.TargetCourseId, p.PrerequisiteCourseId });
 
-            // NotificationRecipient composite PK 
-            builder.Entity<NotificationRecipient>().HasKey(nr => new { nr.NotificationId, nr.RecipientId });
 
 
 
@@ -112,19 +106,6 @@ namespace LMS.Infrastructure.Persistence
                 .HasForeignKey<StudentProfile>(sp => sp.UserId)
                 .OnDelete(DeleteBehavior.Cascade); // delete student profile when app user is deleted
 
-            // AppUser -> NotificationRecipient (one-to-many)
-            builder.Entity<AppUser>()
-                .HasMany(u => u.NotificationRecipients)
-                .WithOne(nr => nr.Recipient)
-                .HasForeignKey(nr => nr.RecipientId)
-                .OnDelete(DeleteBehavior.Cascade); // delete notification recipients when user is deleted
-
-            // Notification -> NotificationRecipient (one-to-many)
-            builder.Entity<Notification>()
-                .HasMany(n => n.Recipients)
-                .WithOne(nr => nr.Notification)
-                .HasForeignKey(nr => nr.NotificationId)
-                .OnDelete(DeleteBehavior.Cascade); // delete notification recipients when notification is deleted
 
             // TutorProfile -> Courses (many-to-many)
             builder.Entity<TutorProfile>()
@@ -211,12 +192,6 @@ namespace LMS.Infrastructure.Persistence
             // User authentication and profile lookups
             builder.Entity<AppUser>().HasIndex(u => u.Email).IsUnique().HasDatabaseName("IX_AppUsers_Email");
 
-
-            // ==== NOTIFICATION SYSTEM INDEXES ====
-
-            // Notification recipient queries (unread notifications, etc.)
-            builder.Entity<NotificationRecipient>().HasIndex(nr => new { nr.RecipientId, nr.Opened }).HasDatabaseName("IX_NotificationRecipients_RecipientId_Opened");
-            builder.Entity<NotificationRecipient>().HasIndex(nr => new { nr.RecipientId, nr.CreatedAt }).HasDatabaseName("IX_NotificationRecipients_RecipientId_CreatedAt");
 
 
             // ==== ENROLLMENT AND COURSE MANAGEMENT ====

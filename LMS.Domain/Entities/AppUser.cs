@@ -26,8 +26,6 @@ namespace LMS.Domain.Entities
         public TutorProfile? TutorProfile { get; set; }
         public StudentProfile? StudentProfile { get; set; }
 
-        // Notifications
-        public ICollection<NotificationRecipient>? NotificationRecipients { get; set; }
     }
 
 }
