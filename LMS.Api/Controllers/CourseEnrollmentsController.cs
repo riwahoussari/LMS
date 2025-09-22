@@ -25,12 +25,12 @@ namespace LMS.Api.Controllers
 
         // GET ALL
         /// <summary>
-        /// Get all enrollments for a course (Admin/Tutor only).
+        /// Get all enrollments for a course (Admin/Assigned Tutor only).
         /// </summary>
         /// <remarks>
         /// - Requires **Admin** or **Tutor** role.  
         /// - Tutors can only access enrollments for courses they are assigned to.  
-        /// - Returns a list of students enrolled in the specified course.  
+        /// - Returns a list of enrollments to the specified course.  
         /// </remarks>
         [Authorize(Roles = RoleConstants.Admin + " , " + RoleConstants.Tutor)]
         [HttpGet("{id}/enrollments")]
@@ -135,20 +135,19 @@ namespace LMS.Api.Controllers
 
         // UPDATE
         /// <summary>
-        /// Update an enrollment record (Student/Assigned Tutor only).
+        /// Update an enrollment record (Enrolled Student/Assigned Tutor only).
         /// </summary>
         /// <remarks>
         /// - Requires **Student** or **Tutor** role.  
-        /// - Students can update their own enrollment (e.g., withdraw).  
-        /// - Tutors can update enrollment status for students in their courses.  
-        /// - If no status is provided in the DTO, returns the current enrollment details.  
+        /// - Students can update their own enrollment (e.g. Drop).  
+        /// - Tutors can update enrollment status for students in their courses. (e.g. Pass - Fail - Suspend) 
         /// </remarks>
         [Authorize(Roles = RoleConstants.Student + " , " + RoleConstants.Tutor)]
         [HttpPatch("{courseId}/enrollements/{studentProfileId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EnrollmentResponseDto))]
         [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
         [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
-        [SwaggerResponse(statusCode: 403, description: "User authenticated but not admin nor assigned tutor")]
+        [SwaggerResponse(statusCode: 403, description: "User authenticated but not an assigned tutor nor the enrolled student")]
         [SwaggerResponse(statusCode: 404, description: "Enrollment not found")]
         public async Task<IActionResult> UpdateEnrollment(string courseId, string studentProfileId, UpdateEnrollmentDto dto)
         {
