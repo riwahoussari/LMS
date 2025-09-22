@@ -2,17 +2,18 @@
 using LMS.Application.DTOs;
 using LMS.Application.Interfaces;
 using LMS.Application.Validators;
+using LMS.Infrastructure;
+using LMS.Infrastructure.Constants;
+using LMS.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text;
-using LMS.Infrastructure;
-using LMS.Infrastructure.Seeding;
-using LMS.Infrastructure.Constants;
 
 
 namespace LMS.Api.Controllers
@@ -33,8 +34,19 @@ namespace LMS.Api.Controllers
         }
 
         // ------------------- REGISTER -------------------
+        /// <summary>
+        /// Register a new admin (Admin only).
+        /// </summary>
+        /// <remarks>
+        /// Requires authentication and Admin role.  
+        /// Returns a JWT access token and refresh token for the new admin.  
+        /// </remarks>
         [Authorize(Roles = RoleConstants.Admin)]
         [HttpPost("register-admin")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseDto))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
+        [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
+        [SwaggerResponse(statusCode: 403, description: "User authenticated but not an admin")]
         public async Task<IActionResult> RegisterAdmin(RegisterUserBaseDto dto)
         {
             // data validation
@@ -58,7 +70,16 @@ namespace LMS.Api.Controllers
 
         }
 
+        /// <summary>
+        /// Register a new student.
+        /// </summary>
+        /// <remarks>
+        /// Public endpoint.  
+        /// Returns a JWT access token and refresh token for the new student.  
+        /// </remarks>
         [HttpPost("register-student")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseDto))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
         public async Task<IActionResult> RegisterStudent(RegisterStudentDto dto)
         {
             // data validation
@@ -83,7 +104,16 @@ namespace LMS.Api.Controllers
 
         }
 
+        /// <summary>
+        /// Register a new tutor.
+        /// </summary>
+        /// <remarks>
+        /// Public endpoint.  
+        /// Returns a JWT access token and refresh token for the new tutor.  
+        /// </remarks>
         [HttpPost("register-tutor")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseDto))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
         public async Task<IActionResult> RegisterTutor(RegisterTutorDto dto)
         {
             // data validation
@@ -110,7 +140,18 @@ namespace LMS.Api.Controllers
 
 
         // ------------------- LOGIN -------------------
+        /// <summary>
+        /// Authenticate a user and issue tokens.
+        /// </summary>
+        /// <remarks>
+        /// Public endpoint.  
+        /// Requires valid email and password.  
+        /// Returns a JWT access token and refresh token on success.  
+        /// </remarks>
         [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseDto))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
+        [SwaggerResponse(statusCode: 401, description: "Invalid email or password")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             // data validation
@@ -136,7 +177,18 @@ namespace LMS.Api.Controllers
 
 
         // ------------------- REFRESH -------------------
+        /// <summary>
+        /// Refresh the JWT access token.
+        /// </summary>
+        /// <remarks>
+        /// Public endpoint.  
+        /// Requires a valid refresh token.  
+        /// Issues a new JWT access token and refresh token, invalidating the old one.  
+        /// </remarks>
         [HttpPost("refresh")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseDto))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
+        [SwaggerResponse(statusCode: 401, description: "Invalid or inactive refresh token")]
         public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto dto)
         {
             // data validation
@@ -161,8 +213,19 @@ namespace LMS.Api.Controllers
 
 
         // ------------------- REVOKE -------------------
+        /// <summary>
+        /// Revoke a refresh token (Authenticated users only).
+        /// </summary>
+        /// <remarks>
+        /// Requires authentication.  
+        /// Revokes the specified refresh token, preventing further use.  
+        /// </remarks>
         [Authorize]
         [HttpPost("revoke")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
+        [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
+        [SwaggerResponse(statusCode: 404, description: "Token not found or already inactive")]
         public async Task<IActionResult> Revoke([FromBody] RefreshRequestDto dto)
         {
             // data validation
