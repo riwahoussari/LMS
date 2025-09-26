@@ -46,25 +46,29 @@ namespace LMS.Application.Services
             return user == null ? null : _mapper.Map<UserResponseDto>(user);
         }
 
-        public async Task<IEnumerable<UserResponseDto>> GetAllAsync(GetUsersQueryDto dto, bool withProfile = false)
+        public async Task<(IEnumerable<UserResponseDto> Users, int Total)> GetAllAsync(GetUsersQueryDto dto, bool withProfile = false)
         {
             IQueryable<AppUser> query = withProfile
             ? _uow.Users.QueryWithProfiles()
             : _uow.Users.Query();
 
             query = UserFilter.Apply(query, dto);
-            
+
+            // get total before pagination
+            var total = await query.CountAsync();
+
+            // apply sorting
             if (dto.SortBy != null)
             {
                 query = _sorter.Apply(query, dto.SortBy, dto.SortAsc != false);
             }
 
-            // Apply pagination (limit + offset)
+            // Apply pagination 
             if (dto.Offset.HasValue) query = query.Skip(dto.Offset.Value);
             if (dto.Limit.HasValue) query = query.Take(dto.Limit.Value);
             
             var users = await query.ToListAsync();
-            return _mapper.Map<IEnumerable<UserResponseDto>>(users);
+            return (_mapper.Map<IEnumerable<UserResponseDto>>(users), total);
         }
 
 

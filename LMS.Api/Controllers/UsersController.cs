@@ -3,6 +3,7 @@ using LMS.Application.DTOs;
 using LMS.Application.Interfaces;
 using LMS.Application.Services;
 using LMS.Application.Validators;
+using LMS.Domain.Entities;
 using LMS.Infrastructure.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -38,7 +39,7 @@ namespace LMS.Api.Controllers
         /// </remarks>
         [Authorize]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserResponseDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PagedResult<UserResponseDto>))]
         [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
         [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
         [SwaggerResponse(statusCode: 403, description: "Forbidden: non-admins can only see tutors")]
@@ -58,9 +59,17 @@ namespace LMS.Api.Controllers
             }
 
             // get users
-            var users = await _userService.GetAllAsync(query, withProfile: true);
+            var (users, total) = await _userService.GetAllAsync(query, withProfile: true);
 
-            return Ok(users);
+            var result = new PagedResult<UserResponseDto>
+            {
+                Items = users,
+                Total = total,
+                Limit = query.Limit,
+                Offset = query.Offset
+            };
+
+            return Ok(result);
         }
 
 
