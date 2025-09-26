@@ -37,8 +37,8 @@ namespace LMS.Application.Validators
                 .WithMessage("Limit must be bigger than 0");
 
             RuleFor(x => x.Offset)
-                .Must(o => o == null || o > 0)
-                .WithMessage("Offset must be bigger than 0");
+                .Must(o => o == null || o >= 0)
+                .WithMessage("Offset must be positive");
         }
         
 
