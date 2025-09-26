@@ -14,7 +14,7 @@ namespace LMS.Application.Interfaces
         Task<CourseResponseDto> CreateAsync(string tutorId, CreateCourseDto dto);
 
         // READ
-        Task<IEnumerable<CourseResponseDto>> GetAllAsync(GetCoursesQueryDto dto);
+        Task<(IEnumerable<CourseResponseDto> Courses, int Total)> GetAllAsync(GetCoursesQueryDto dto);
         Task<CourseResponseDto?> GetByIdAsync(string id);
 
         // UPDATE

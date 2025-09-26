@@ -78,24 +78,31 @@ namespace LMS.Application.Services
         }
 
         // READ
-        public async Task<IEnumerable<CourseResponseDto>> GetAllAsync(GetCoursesQueryDto dto)
+        public async Task<(IEnumerable<CourseResponseDto> Courses, int Total)> GetAllAsync(GetCoursesQueryDto dto)
         {
             IQueryable<Course> query = _uow.Courses.Query();
 
+            // apply filters
             query = CourseFilter.Apply(query, dto);
 
+            // get total before pagination
+            var total = await query.CountAsync();
+
+            // apply sorting
             if (dto.SortBy != null)
             {
                 query = _sorter.Apply(query, dto.SortBy, dto.SortAsc != false);
             }
 
-            // Apply pagination (limit + offset)
+            // apply pagination
             if (dto.Offset.HasValue) query = query.Skip(dto.Offset.Value);
             if (dto.Limit.HasValue) query = query.Take(dto.Limit.Value);
 
             var courses = await query.ToListAsync();
-            return _mapper.Map<IEnumerable<CourseResponseDto>>(courses);
+
+            return (_mapper.Map<IEnumerable<CourseResponseDto>>(courses), total);
         }
+
 
         public async Task<CourseResponseDto?> GetByIdAsync(string id)
         {

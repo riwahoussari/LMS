@@ -125,13 +125,13 @@ namespace LMS.Application.Services
             var student = await _uow.Users.FindSingleWithProfileAsync(u => u.Id == studentId);
 
             if (student == null) throw new KeyNotFoundException("Student not found");
-
+            
             // Get enrollments
             if (student.StudentProfile == null) throw new KeyNotFoundException("Student profile not found");
             
             var enrollments = await _uow.Enrollments.FindAsync(e =>
                 e.StudentId == student.StudentProfile.Id &&
-                statusFilter == null ? true : e.Status == statusFilter);
+                (statusFilter == null ? true : e.Status == statusFilter));
 
             return _mapper.Map<IEnumerable<EnrollmentResponseDto>>(enrollments);
         }

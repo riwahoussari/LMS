@@ -82,7 +82,7 @@ namespace LMS.Api.Controllers
         /// </remarks>
         [Authorize]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CourseResponseDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PagedResult<CourseResponseDto>))]
         [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
         [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
         public async Task<IActionResult> GetCourses([FromQuery] GetCoursesQueryDto query)
@@ -106,34 +106,47 @@ namespace LMS.Api.Controllers
                     return BadRequest("You can only see Published courses. Leave status feild empty or set it to 'Published'");
             }
 
+
             // get courses
-            var courses = await _courseService.GetAllAsync(query);
+            var (courses, total) = await _courseService.GetAllAsync(query);
 
-            // get user
+            // mark user enrollment
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var enrollments = await _enrollmentService.GetMyEnrollmentsAsync(currentUserId, null);
-
-            if (enrollments == null || enrollments.Count() == 0)
+            try
             {
-                foreach (CourseResponseDto course in courses) course.isUserEnrolled = false;
-            }
-            else
-            {
-                var enrollmentsList = enrollments.ToList();
-                foreach (CourseResponseDto course in courses)
+                var enrollments = await _enrollmentService.GetMyEnrollmentsAsync(currentUserId, null);
+                if (enrollments == null || enrollments.Count() == 0)
                 {
-                    course.isUserEnrolled = false;
-
-                    var enrollment = enrollmentsList.FirstOrDefault(e => e.Course.Id == course.Id);
-                    if (enrollment != null)
+                    foreach (CourseResponseDto course in courses) course.isUserEnrolled = false;
+                }
+                else
+                {
+                    var enrollmentsList = enrollments.ToList();
+                    foreach (CourseResponseDto course in courses)
                     {
-                        enrollmentsList.Remove(enrollment);
-                        course.isUserEnrolled = true;
+                        course.isUserEnrolled = false;
+
+                        var enrollment = enrollmentsList.FirstOrDefault(e => e.Course.Id == course.Id);
+                        if (enrollment != null)
+                        {
+                            enrollmentsList.Remove(enrollment);
+                            course.isUserEnrolled = true;
+                        }
                     }
                 }
             }
+            catch { foreach (CourseResponseDto course in courses) course.isUserEnrolled = false; }
 
-            return Ok(courses);
+
+            var result = new PagedResult<CourseResponseDto>
+            {
+                Items = courses,
+                Total = total,
+                Limit = query.Limit,
+                Offset = query.Offset
+            };
+
+            return Ok(result);
         }
 
 
