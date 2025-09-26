@@ -18,10 +18,14 @@ namespace LMS.Api.Controllers
     public class CoursesController : ControllerBase
     {
         private readonly ICourseService _courseService;
+        private readonly IEnrollmentService _enrollmentService;
+        private readonly IUserService _userService;
 
-        public CoursesController(ICourseService courseService, IEnrollmentService enrollmentService)
+        public CoursesController(ICourseService courseService, IEnrollmentService enrollmentService, IUserService userService)
         {
             _courseService = courseService;
+            _enrollmentService = enrollmentService;
+            _userService = userService;
         }
 
         // CREATE
@@ -104,6 +108,30 @@ namespace LMS.Api.Controllers
 
             // get courses
             var courses = await _courseService.GetAllAsync(query);
+
+            // get user
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var enrollments = await _enrollmentService.GetMyEnrollmentsAsync(currentUserId, null);
+
+            if (enrollments == null || enrollments.Count() == 0)
+            {
+                foreach (CourseResponseDto course in courses) course.isUserEnrolled = false;
+            }
+            else
+            {
+                var enrollmentsList = enrollments.ToList();
+                foreach (CourseResponseDto course in courses)
+                {
+                    course.isUserEnrolled = false;
+
+                    var enrollment = enrollmentsList.FirstOrDefault(e => e.Course.Id == course.Id);
+                    if (enrollment != null)
+                    {
+                        enrollmentsList.Remove(enrollment);
+                        course.isUserEnrolled = true;
+                    }
+                }
+            }
 
             return Ok(courses);
         }

@@ -37,6 +37,10 @@ namespace LMS.Application.Mappings
             CreateMap<Course, CourseResponseDto>()
                 .ForMember(dest => dest.Prerequisites, opt => opt.MapFrom(src => src.Prerequisites.Select(p => p.PrerequisiteCourse)))
                 .ForMember(dest => dest.SpotsLeft, opt => opt.MapFrom(src => src.MaxCapacity - src.Enrollments.Count()));
+                //.ForMember(dest => dest.isUserEnrolled, opt => opt.MapFrom((src, dest, destMember, context) =>
+                //    context.Items.ContainsKey("UserId")
+                //        ? src.Enrollments.Any(e => e.StudentId.ToString() == context.Items["UserId"].ToString())
+                //        : false));
 
             // Schedules
             CreateMap<Schedule, ScheduleResponseDto>();
