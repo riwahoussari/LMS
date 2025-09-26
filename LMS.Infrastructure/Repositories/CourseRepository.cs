@@ -29,6 +29,7 @@ namespace LMS.Infrastructure.Repositories
                 .Include(c => c.Schedule.Sessions)
                 .Include(c => c.Prerequisites)
                     .ThenInclude(p => p.PrerequisiteCourse)
+                .Include(c => c.Enrollments)
                 .AsQueryable();
         }
 
@@ -43,6 +44,7 @@ namespace LMS.Infrastructure.Repositories
                 .Include(c => c.Schedule.Sessions)
                 .Include(c => c.Prerequisites)
                     .ThenInclude(p => p.PrerequisiteCourse)
+                .Include(c => c.Enrollments)
                 .Where(predicate)
                 .SingleOrDefaultAsync();
         }

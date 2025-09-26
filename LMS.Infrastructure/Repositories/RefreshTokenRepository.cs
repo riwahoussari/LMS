@@ -22,7 +22,7 @@ namespace LMS.Infrastructure.Repositories
         {
             if (token != null && token.IsActive)
             {
-                token.RevokedAt = DateTime.Now;
+                token.RevokedAt = DateTime.UtcNow;
             }
         }
 

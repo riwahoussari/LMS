@@ -53,6 +53,7 @@ namespace LMS.Application.DTOs
         public string Title { get; set; } = null!;
         public string Description { get; set; } = null!;
         public int MaxCapacity { get; set; }
+        public int SpotsLeft { get; set; }
         public CourseStatus Status { get; set; }
         public TutorProfileExtendedResponseDto[] TutorProfiles { get; set; } = null!;
         public CategoryResponseDto Category { get; set; } = null!;

@@ -255,14 +255,14 @@ namespace LMS.Api.Controllers
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-          
+
             var claims = new List<Claim>()
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("FirstName", user.FirstName),
-                new Claim("LastName", user.LastName),
-                new Claim(ClaimTypes.Role, user.RoleName)
+                new Claim("firstName", user.FirstName),
+                new Claim("lastName", user.LastName),
+                new Claim("role", user.RoleName)
             };
 
 
