@@ -30,6 +30,7 @@ namespace LMS.Application.DTOs
         public PartialCourseResponseDto Course { get; set; }
         public PartialUserResponseDto User { get; set; }
         public EnrollmentStatus Status { get; set; }
+        public StudentProfileResponseDto StudentProfile { get; set; }
     }
 
 

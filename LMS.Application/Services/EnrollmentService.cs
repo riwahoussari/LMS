@@ -236,18 +236,53 @@ namespace LMS.Application.Services
                         if ((status  == EnrollmentStatus.Passed || status == EnrollmentStatus.Failed) && !DateHasPassed(course.Schedule.EndDate))
                             throw new Exception($"Cannot go to {status} status since the course has not ended yet");
 
-                        else if (status == EnrollmentStatus.Suspended && DateHasPassed(course.Schedule.EndDate))
-                            throw new Exception($"Cannot go to {status} status since the course has ended");
-
                             enrollment.Status = status;
                         break;
 
                     case EnrollmentStatus.Suspended:
-                        if (status != EnrollmentStatus.Pending && status != EnrollmentStatus.Active)
+                        if (status != EnrollmentStatus.Active && status != EnrollmentStatus.Passed && status != EnrollmentStatus.Failed)
                             throw new Exception($"Cannot go from 'Suspended' status to {status} status");
 
                         if (status == EnrollmentStatus.Active && DateHasPassed(course.Schedule.EndDate))
                             throw new Exception($"Cannot go to {status} status since the course has ended");
+
+                        if ((status == EnrollmentStatus.Passed || status == EnrollmentStatus.Failed) && !DateHasPassed(course.Schedule.EndDate))
+                            throw new Exception($"Cannot go to {status} status since the course has not ended yet");
+
+                        // Check Max Capacity
+                        if (course.MaxCapacity > 0 && course.Enrollments.Where(e =>
+                                    e.Status == EnrollmentStatus.Active ||
+                                    e.Status == EnrollmentStatus.Passed ||
+                                    e.Status == EnrollmentStatus.Failed ||
+                                    e.Status == EnrollmentStatus.Pending).Count() == course.MaxCapacity)
+                            throw new Exception($"Cannot go to {status} status since the course reached max capacity");
+
+                        // Check if user completed all prerequisites
+                        foreach (var prerequisite in course.Prerequisites)
+                        {
+                            if (await StudentCompletedCourse(studentProfile.Id, prerequisite.PrerequisiteCourseId) == false)
+                                throw new Exception($"Cannot go to {status} status since the student must complete all prerequisite courses.");
+                        }
+
+                        enrollment.Status = status;
+                        break;
+
+                    case EnrollmentStatus.Passed:
+                        if (status != EnrollmentStatus.Failed)
+                            throw new Exception($"Cannot go from 'Active' status to {status} status");
+
+                        if (status == EnrollmentStatus.Failed && !DateHasPassed(course.Schedule.EndDate))
+                            throw new Exception($"Cannot go to {status} status since the course has not ended yet");
+
+                        enrollment.Status = status;
+                        break;
+
+                    case EnrollmentStatus.Failed:
+                        if (status != EnrollmentStatus.Passed)
+                            throw new Exception($"Cannot go from 'Active' status to {status} status");
+
+                        if (status == EnrollmentStatus.Passed && !DateHasPassed(course.Schedule.EndDate))
+                            throw new Exception($"Cannot go to {status} status since the course has not ended yet");
 
                         enrollment.Status = status;
                         break;
@@ -276,8 +311,24 @@ namespace LMS.Application.Services
                         if (status != EnrollmentStatus.Pending)
                             throw new Exception($"Cannot go from 'Dropped' status to {status} status");
 
+                        // Check if Course has ended
                         if (DateHasPassed(course.Schedule.EndDate))
                             throw new Exception($"Cannot go to {status} status since the course has ended");
+
+                        // Check Max Capacity
+                        if (course.MaxCapacity > 0 && course.Enrollments.Where(e =>
+                                    e.Status == EnrollmentStatus.Active ||
+                                    e.Status == EnrollmentStatus.Passed ||
+                                    e.Status == EnrollmentStatus.Failed ||
+                                    e.Status == EnrollmentStatus.Pending).Count() == course.MaxCapacity)
+                            throw new Exception($"Cannot go to {status} status since the course reached max capacity");
+
+                        // Check if user completed all prerequisites
+                        foreach (var prerequisite in course.Prerequisites)
+                        {
+                            if (await StudentCompletedCourse(studentProfile.Id, prerequisite.PrerequisiteCourseId) == false)
+                                throw new Exception($"Cannot go to {status} status since you must complete all prerequisite courses.");
+                        }
 
                         enrollment.Status = status;
                         break;

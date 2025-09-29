@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LMS.Application.DTOs;
 using LMS.Domain.Entities;
+using LMS.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,12 +38,13 @@ namespace LMS.Application.Mappings
             CreateMap<Course, PartialCourseResponseDto>();
             CreateMap<Course, CourseResponseDto>()
                 .ForMember(dest => dest.Prerequisites, opt => opt.MapFrom(src => src.Prerequisites.Select(p => p.PrerequisiteCourse)))
-                .ForMember(dest => dest.SpotsLeft, opt => opt.MapFrom(src => src.MaxCapacity - src.Enrollments.Count()));
-                //.ForMember(dest => dest.isUserEnrolled, opt => opt.MapFrom((src, dest, destMember, context) =>
-                //    context.Items.ContainsKey("UserId")
-                //        ? src.Enrollments.Any(e => e.StudentId.ToString() == context.Items["UserId"].ToString())
-                //        : false));
-
+                .ForMember(dest => dest.SpotsLeft, opt => opt.MapFrom(src => 
+                    src.MaxCapacity - src.Enrollments.Where(e => 
+                        e.Status == EnrollmentStatus.Active || 
+                        e.Status == EnrollmentStatus.Passed || 
+                        e.Status == EnrollmentStatus.Failed || 
+                        e.Status == EnrollmentStatus.Pending).Count()));
+              
             // Schedules
             CreateMap<Schedule, ScheduleResponseDto>();
             CreateMap<ScheduleSession, ScheduleSessionResponseDto>();
@@ -51,7 +53,8 @@ namespace LMS.Application.Mappings
             CreateMap<Enrollment, EnrollmentResponseDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Student.User.Id));
             CreateMap<Enrollment, ExtendedEnrollmentResponseDto>()
-                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.Student.User));
+                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.Student.User))
+                .ForMember(dest => dest.StudentProfile, opt => opt.MapFrom(src => src.Student));
 
         }
 
