@@ -8,8 +8,8 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace LMS.Api.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     [Authorize(Roles = RoleConstants.Admin)] // admin-only by default
     public class AnalyticsController : ControllerBase
     {
@@ -25,7 +25,6 @@ namespace LMS.Api.Controllers
         [HttpGet("summary")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnalyticsSummaryDto))]
         [SwaggerOperation(Summary = "Get analytics summary", Description = "Returns overall platform statistics.")]
-        [SwaggerResponse(200, "Success")]
         public async Task<IActionResult> GetSummary() => Ok(await _analytics.GetSummaryAsync());
 
         /// <summary>
@@ -37,7 +36,6 @@ namespace LMS.Api.Controllers
         [HttpGet("users")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserAnalyticsDto))]
         [SwaggerOperation(Summary = "Get user analytics", Description = "Returns analytics about users.")]
-        [SwaggerResponse(200, "Success")]
         public async Task<IActionResult> GetUsers() => Ok(await _analytics.GetUserAnalyticsAsync());
 
         /// <summary>
@@ -49,7 +47,6 @@ namespace LMS.Api.Controllers
         [HttpGet("courses")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CourseAnalyticsDto))]
         [SwaggerOperation(Summary = "Get course analytics", Description = "Returns analytics about courses.")]
-        [SwaggerResponse(200, "Success")]
         public async Task<IActionResult> GetCourses() => Ok(await _analytics.GetCourseAnalyticsAsync());
 
         /// <summary>
@@ -61,7 +58,6 @@ namespace LMS.Api.Controllers
         [HttpGet("tutors")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TutorAnalyticsDto))]
         [SwaggerOperation(Summary = "Get tutor analytics", Description = "Returns analytics about tutors.")]
-        [SwaggerResponse(200, "Success")]
         public async Task<IActionResult> GetTutors() => Ok(await _analytics.GetTutorAnalyticsAsync());
 
         /// <summary>
@@ -73,7 +69,6 @@ namespace LMS.Api.Controllers
         [HttpGet("students")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StudentAnalyticsDto))]
         [SwaggerOperation(Summary = "Get student analytics", Description = "Returns analytics about students.")]
-        [SwaggerResponse(200, "Success")]
         public async Task<IActionResult> GetStudents() => Ok(await _analytics.GetStudentAnalyticsAsync());
 
     }
