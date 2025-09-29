@@ -109,7 +109,7 @@ namespace LMS.Api.Controllers
         /// - Returns the enrollment details for the given course and student.  
         /// </remarks>
         [Authorize]
-        [HttpGet("{courseId}/enrollements/{studentProfileId}")]
+        [HttpGet("{courseId}/enrollments/{studentProfileId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EnrollmentResponseDto))]
         [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
         [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
@@ -143,7 +143,7 @@ namespace LMS.Api.Controllers
         /// - Tutors can update enrollment status for students in their courses. (e.g. Pass - Fail - Suspend) 
         /// </remarks>
         [Authorize(Roles = RoleConstants.Student + " , " + RoleConstants.Tutor)]
-        [HttpPatch("{courseId}/enrollements/{studentProfileId}")]
+        [HttpPatch("{courseId}/enrollments/{studentProfileId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EnrollmentResponseDto))]
         [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
         [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
