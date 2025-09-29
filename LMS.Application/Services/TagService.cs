@@ -27,7 +27,10 @@ namespace LMS.Application.Services
         // CREATE
         public async Task<TagResponseDto> CreateTag(CreateTagDto dto)
         {
-            var tag = new Tag { Name = dto.Name };
+            if (await _uow.Tag.FindFirstAsync(tag => tag.Name.ToLower() == dto.Name.ToLower().Trim()) != null)
+                throw new Exception("A tag with that name already exists.");
+
+            var tag = new Tag { Name = dto.Name.Trim() };
 
             await _uow.Tag.AddAsync(tag);
             await _uow.CompleteAsync();
@@ -40,6 +43,25 @@ namespace LMS.Application.Services
         {
             var tags = await _uow.Tag.GetAllAsync();
             return _mapper.Map<IEnumerable<TagResponseDto>>(tags);
+        }
+
+        public async Task<IEnumerable<TagStatsResponseDto>> GetTagsWithStats()
+        {
+            var tags = await _uow.Tag.GetAllAsync();
+            var result = new List<TagStatsResponseDto>();
+
+            foreach (var tag in tags)
+            {
+                result.Add(new TagStatsResponseDto
+                {
+                    Id = tag.Id.ToString(),
+                    Name = tag.Name,
+                    TotalCourses = await _uow.Courses.CountAsync(c => c.Tags.Contains(tag)),
+                    TotalEnrollments = await _uow.Enrollments.CountAsync(e => e.Course.Tags.Contains(tag))
+                });
+            }
+
+            return result;
         }
 
         public async Task<TagResponseDto?> GetTag(string id)
@@ -70,8 +92,11 @@ namespace LMS.Application.Services
                 throw new Exception("Tag not found");
             }
 
+            if (await _uow.Tag.FindFirstAsync(tag => tag.Name.ToLower() == dto.Name.ToLower().Trim()) != null)
+                throw new Exception("A tag with that name already exists.");
+
             // update category
-            tag.Name = string.IsNullOrEmpty(dto.Name) ? tag.Name : dto.Name;
+            tag.Name = string.IsNullOrEmpty(dto.Name) ? tag.Name : dto.Name.Trim();
 
             await _uow.CompleteAsync();
             return _mapper.Map<TagResponseDto>(tag);

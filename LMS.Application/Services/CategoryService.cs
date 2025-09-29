@@ -29,7 +29,10 @@ namespace LMS.Application.Services
         // CREATE
         public async Task<CategoryResponseDto> CreateCategory(CreateCategoryDto dto)
         {
-            var category = new Category { Name = dto.Name};
+            if (await _uow.Category.FindFirstAsync(cat => cat.Name.ToLower() == dto.Name.ToLower().Trim()) != null)
+                throw new Exception("A category with that name already exists.");
+
+            var category = new Category { Name = dto.Name.Trim()};
 
             await _uow.Category.AddAsync(category);
             await _uow.CompleteAsync();
@@ -43,6 +46,26 @@ namespace LMS.Application.Services
             var categories = await _uow.Category.GetAllAsync();
             return _mapper.Map<IEnumerable<CategoryResponseDto>>(categories);
         }
+
+        public async Task<IEnumerable<CategoryStatsResponseDto>> GetCategoriesWithStats()
+        {
+            var categories = await _uow.Category.GetAllAsync();
+            var result = new List<CategoryStatsResponseDto>();
+
+            foreach (var category in categories)
+            {
+                result.Add(new CategoryStatsResponseDto
+                {
+                    Id = category.Id.ToString(),
+                    Name = category.Name,
+                    TotalCourses = await _uow.Courses.CountAsync(c => c.CategoryId == category.Id),
+                    TotalEnrollments = await _uow.Enrollments.CountAsync(e => e.Course.CategoryId == category.Id)
+                });
+            }
+
+            return result;
+        }
+
 
         public async Task<CategoryResponseDto?> GetCategory(string id)
         {
@@ -73,7 +96,10 @@ namespace LMS.Application.Services
             }
 
             // update category
-            category.Name = string.IsNullOrEmpty(dto.Name) ? category.Name : dto.Name;
+            if (await _uow.Category.FindFirstAsync(cat => cat.Name.ToLower() == dto.Name.ToLower().Trim()) != null)
+                throw new Exception("A category with that name already exists.");
+
+            category.Name = string.IsNullOrEmpty(dto.Name) ? category.Name : dto.Name.Trim();
               
             await _uow.CompleteAsync();
             return _mapper.Map<CategoryResponseDto>(category);

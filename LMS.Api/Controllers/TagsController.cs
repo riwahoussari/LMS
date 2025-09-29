@@ -63,13 +63,17 @@ namespace LMS.Api.Controllers
         /// <remarks>
         /// - Requires authentication 
         /// - Returns a list of all available tags.  
+        /// - Only admins will get categories with stats if the field is set to true
         /// </remarks>
         [Authorize]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<TagResponseDto>))]
         [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
-        public async Task<IActionResult> GetTags()
+        public async Task<IActionResult> GetTags(bool? withStats = false)
         {
+            if (withStats == true && User.IsInRole(RoleConstants.Admin))
+                return Ok(await _tagService.GetTagsWithStats());
+
             return Ok(await _tagService.GetTags());
         }
 

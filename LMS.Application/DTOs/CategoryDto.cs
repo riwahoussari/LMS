@@ -23,4 +23,12 @@ namespace LMS.Application.DTOs
         public string Name { get; set; } = null!;
     }
 
+    public class CategoryStatsResponseDto
+    { 
+        public string Id { get; set; } = null!;
+        public string Name { get; set; } = null!;
+        public int TotalCourses { get; set; }    
+        public int TotalEnrollments { get; set; }    
+    }
+
 }

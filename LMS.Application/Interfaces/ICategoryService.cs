@@ -15,6 +15,7 @@ namespace LMS.Application.Interfaces
 
         // READ
         Task<IEnumerable<CategoryResponseDto>> GetCategories();
+        Task<IEnumerable<CategoryStatsResponseDto>> GetCategoriesWithStats();
         Task<CategoryResponseDto?> GetCategory(string id);
 
         // UPDATE

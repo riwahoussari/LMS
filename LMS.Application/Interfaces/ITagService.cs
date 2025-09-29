@@ -14,6 +14,7 @@ namespace LMS.Application.Interfaces
 
         // READ
         Task<IEnumerable<TagResponseDto>> GetTags();
+        Task<IEnumerable<TagStatsResponseDto>> GetTagsWithStats();
         Task<TagResponseDto?> GetTag(string id);
 
         // UPDATE

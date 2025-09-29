@@ -18,7 +18,8 @@ namespace LMS.Infrastructure.Repositories
         {
         }
 
-        public virtual async Task<IEnumerable<Enrollment>> GetAllAsync()
+        public override async Task<int> CountAsync(Expression<Func<Enrollment, bool>> predicate) => await _dbSet.Include(e => e.Course).CountAsync(predicate);
+        public override async Task<IEnumerable<Enrollment>> GetAllAsync()
         {
             return await _dbSet
                 .Include(e => e.Course)

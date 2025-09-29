@@ -63,13 +63,17 @@ namespace LMS.Api.Controllers
         /// </summary>
         /// <remarks>
         /// Requires authentication.
+        /// Only admins will get categories with stats if the field is set to true
         /// </remarks>
         [Authorize]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CategoryResponseDto>))]
         [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
-        public async Task<IActionResult> GetCategories()
+        public async Task<IActionResult> GetCategories(bool? withStats = false)
         {
+            if (withStats == true && User.IsInRole(RoleConstants.Admin)) 
+                return Ok(await _categoryService.GetCategoriesWithStats());
+
             return Ok(await _categoryService.GetCategories());
         }
 

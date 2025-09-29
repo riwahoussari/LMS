@@ -22,7 +22,7 @@ namespace LMS.Infrastructure.Repositories
             _dbSet = context.Set<T>();
         }
 
-        public async Task<int> CountAsync(Expression<Func<T, bool>> predicate) => await _dbSet.CountAsync(predicate);
+        public virtual async Task<int> CountAsync(Expression<Func<T, bool>> predicate) => await _dbSet.CountAsync(predicate);
         
         public virtual async Task<T?> GetByIdAsync(Guid id) => await _dbSet.FindAsync(id);
         public virtual async Task<T?> GetByIdAsync(string id) => await _dbSet.FindAsync(id);

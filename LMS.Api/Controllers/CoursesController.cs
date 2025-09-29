@@ -130,7 +130,11 @@ namespace LMS.Api.Controllers
                         if (enrollment != null)
                         {
                             enrollmentsList.Remove(enrollment);
-                            course.isUserEnrolled = true;
+                            course.isUserEnrolled = 
+                                enrollment.Status == EnrollmentStatus.Active || 
+                                enrollment.Status == EnrollmentStatus.Pending || 
+                                enrollment.Status == EnrollmentStatus.Passed || 
+                                enrollment.Status == EnrollmentStatus.Failed;
                         }
                     }
                 }
