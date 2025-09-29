@@ -2,6 +2,7 @@
 using LMS.Application.Interfaces;
 using LMS.Application.Services;
 using LMS.Application.Validators;
+using LMS.Domain.Entities;
 using LMS.Domain.Enums;
 using LMS.Infrastructure.Constants;
 using Microsoft.AspNetCore.Authorization;
@@ -192,6 +193,23 @@ namespace LMS.Api.Controllers
                 }
             }
 
+            // mark student enrollment
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userService.GetByIdAsync(currentUserId);
+
+            if (user == null) course.isUserEnrolled = false;
+            else if (user.StudentProfile == null) course.isUserEnrolled = false;
+            else
+            {
+                try
+                {
+                    var enrollment = await _enrollmentService.GetOneAsync(course.Id, user.StudentProfile.Id, user.Id);
+                    if (enrollment == null) course.isUserEnrolled = false;
+                    
+                    else course.isUserEnrolled = true;
+                }
+                catch { course.isUserEnrolled = false; }
+            }
             return Ok(course);
         }
 
