@@ -67,7 +67,7 @@ namespace LMS.Api.Controllers
         /// </remarks>
         [Authorize]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CategoryResponseDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CategoryStatsResponseDto>))]
         [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
         public async Task<IActionResult> GetCategories(bool? withStats = false)
         {

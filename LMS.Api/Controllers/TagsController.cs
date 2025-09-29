@@ -67,7 +67,7 @@ namespace LMS.Api.Controllers
         /// </remarks>
         [Authorize]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<TagResponseDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<TagStatsResponseDto>))]
         [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
         public async Task<IActionResult> GetTags(bool? withStats = false)
         {
