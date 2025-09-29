@@ -15,6 +15,7 @@ namespace LMS.Application.Mappings
         public MappingProfile()
         {
             // Auth - Users - Profiles
+            CreateMap<AppUser, PartialUserResponseDto>();
             CreateMap<AppUser, UserResponseDto>()
                 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : "unknown"));
 
@@ -49,6 +50,8 @@ namespace LMS.Application.Mappings
             // Enrollments
             CreateMap<Enrollment, EnrollmentResponseDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Student.User.Id));
+            CreateMap<Enrollment, ExtendedEnrollmentResponseDto>()
+                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.Student.User));
 
         }
 

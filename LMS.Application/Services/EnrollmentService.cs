@@ -54,7 +54,11 @@ namespace LMS.Application.Services
                 throw new Exception("Course ended");
 
             // Check Max Capacity
-            if (course.MaxCapacity > 0 && course.Enrollments.Count() == course.MaxCapacity)
+            if (course.MaxCapacity > 0 && course.Enrollments.Where(e =>
+                        e.Status == EnrollmentStatus.Active ||
+                        e.Status == EnrollmentStatus.Passed ||
+                        e.Status == EnrollmentStatus.Failed ||
+                        e.Status == EnrollmentStatus.Pending).Count() == course.MaxCapacity)
                 throw new Exception("No spots left. Course reached the max capacity");
 
             // Check if user completed all prerequisites
@@ -87,7 +91,7 @@ namespace LMS.Application.Services
             return _mapper.Map<IEnumerable<EnrollmentResponseDto>>(enrollments);
         }
 
-        public async Task<IEnumerable<EnrollmentResponseDto>> GetByCourseAsync(string courseId)
+        public async Task<IEnumerable<ExtendedEnrollmentResponseDto>> GetByCourseAsync(string courseId)
         {
             if (!Guid.TryParse(courseId, out Guid guid))
             {
@@ -95,7 +99,7 @@ namespace LMS.Application.Services
             }
             var enrollments = await _uow.Enrollments.FindAsync(e => e.CourseId == guid);
 
-            return _mapper.Map<IEnumerable<EnrollmentResponseDto>>(enrollments);
+            return _mapper.Map<IEnumerable<ExtendedEnrollmentResponseDto>>(enrollments);
         }
 
         public async Task<IEnumerable<EnrollmentResponseDto>> GetByStudentAsync(string studentProfileId, EnrollmentStatus? statusFilter)

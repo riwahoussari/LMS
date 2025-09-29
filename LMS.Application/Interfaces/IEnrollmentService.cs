@@ -19,7 +19,7 @@ namespace LMS.Application.Interfaces
         Task<EnrollmentResponseDto> GetOneAsync(string courseId, string studentProfileId, string requesterId);
         Task<IEnumerable<EnrollmentResponseDto>> GetByStudentAsync(string studentProfileId, EnrollmentStatus? statusFilter);
         Task<IEnumerable<EnrollmentResponseDto>> GetMyEnrollmentsAsync(string studentId, EnrollmentStatus? statusFilter);
-        Task<IEnumerable<EnrollmentResponseDto>> GetByCourseAsync(string courseId);
+        Task<IEnumerable<ExtendedEnrollmentResponseDto>> GetByCourseAsync(string courseId);
 
         // Update
         Task<EnrollmentResponseDto> UpdateAsync(string courseId, string studentProfileId, string requesterId, EnrollmentStatus status);

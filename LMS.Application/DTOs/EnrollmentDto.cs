@@ -25,6 +25,13 @@ namespace LMS.Application.DTOs
         public EnrollmentStatus Status { get; set; }
     }
 
+    public class ExtendedEnrollmentResponseDto
+    {
+        public PartialCourseResponseDto Course { get; set; }
+        public PartialUserResponseDto User { get; set; }
+        public EnrollmentStatus Status { get; set; }
+    }
+
 
     public class UpdateEnrollmentDto
     { 
