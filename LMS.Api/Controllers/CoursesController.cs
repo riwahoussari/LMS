@@ -94,8 +94,22 @@ namespace LMS.Api.Controllers
             if (errors.Any())
                 return BadRequest(new { Errors = errors });
 
-            // if not admin only => see published courses
-            if (!User.IsInRole(RoleConstants.Admin))
+            // check if admin or tutor requesting his own courses
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = User.IsInRole(RoleConstants.Admin);
+            bool isTutor = User.IsInRole(RoleConstants.Tutor);
+            bool isTutorHimself = false;
+
+            if (currentUserId != null && isTutor)
+            {
+                var user = await _userService.GetByIdAsync(currentUserId, true);
+                if (user == null || user.TutorProfile == null || query.TutorProfileId == null) isTutorHimself = false;
+                else isTutorHimself = user.TutorProfile.Id == query.TutorProfileId;
+                
+            }
+
+            // if not admin and not tutor himself => see published courses only
+            if (!isAdmin && !isTutorHimself)
             {
                 // if query filter is empty => set it to published
                 if (query.Status == null)
@@ -111,7 +125,6 @@ namespace LMS.Api.Controllers
             var (courses, total) = await _courseService.GetAllAsync(query);
 
             // mark user enrollment
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
                 var enrollments = await _enrollmentService.GetMyEnrollmentsAsync(currentUserId, null);
@@ -237,7 +250,11 @@ namespace LMS.Api.Controllers
         /// <remarks>
         /// - Requires **Tutor** role.  
         /// - Tutors can only update courses they are assigned to.  
-        /// - Returns the updated course details.  
+        /// - Returns the updated course details. 
+        /// - **UPDATE RULES**
+        /// - - If course is in Draft status: Full Update (all fields allowed)
+        /// - - If course is in Archived status: No Updates Allowed
+        /// - - If Course is in Published status: Parial Update ()
         /// </remarks>
         [Authorize(Roles = RoleConstants.Tutor)]
         [HttpPut("{id}")]

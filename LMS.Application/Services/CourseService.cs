@@ -197,9 +197,15 @@ namespace LMS.Application.Services
 
                     if (dto.MaxCapacity != null)
                     {
-                        int enrollmentCount = course.Enrollments.Where(e => e.Status == EnrollmentStatus.Active).Count();
+                        int enrollmentCount = course.Enrollments.Where(e =>
+                            e.Status == EnrollmentStatus.Active ||
+                            e.Status == EnrollmentStatus.Passed ||
+                            e.Status == EnrollmentStatus.Failed ||
+                            e.Status == EnrollmentStatus.Pending).Count();
                         if (dto.MaxCapacity < enrollmentCount) 
                             throw new Exception($"New max capacity ({dto.MaxCapacity}) cannot be less than the current number of active enrollments ({enrollmentCount}).");
+
+                        course.MaxCapacity = dto.MaxCapacity;
                     }
 
                     if (dto.TagIds != null)
