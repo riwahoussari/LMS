@@ -13,7 +13,8 @@ namespace LMS.Application.Validators
     // Create
     public class CreateCourseDtoValidator : AbstractValidator<CreateCourseDto>
     {
-        public CreateCourseDtoValidator() {
+        public CreateCourseDtoValidator()
+        {
 
             RuleFor(x => x.Title).NotEmpty().WithMessage("Title is required");
 
@@ -24,6 +25,15 @@ namespace LMS.Application.Validators
             RuleFor(x => x.Schedule)
                 .NotNull().WithMessage("Schedule is required")
                 .SetValidator(new ScheduleDtoValidator());
+        }
+    }
+
+    public class AssignTutorDtoValidator : AbstractValidator<AssignTutorDto>
+    {
+        public AssignTutorDtoValidator()
+        {
+
+            RuleFor(x => x.TutorId).NotEmpty().WithMessage("TutorId is required");
         }
     }
 

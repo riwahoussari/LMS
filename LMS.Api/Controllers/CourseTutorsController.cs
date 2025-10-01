@@ -1,5 +1,6 @@
 ﻿using LMS.Application.DTOs;
 using LMS.Application.Interfaces;
+using LMS.Application.Validators;
 using LMS.Infrastructure.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -37,12 +38,19 @@ namespace LMS.Api.Controllers
         [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
         [SwaggerResponse(statusCode: 403, description: "User authenticated but not an assigned tutor")]
         [SwaggerResponse(statusCode: 404, description: "Course or tutor not found")]
-        public async Task<IActionResult> AssignTutor(string id, [FromForm] string tutorId)
+        public async Task<IActionResult> AssignTutor(string id, AssignTutorDto dto)
         {
+            // data validation
+            var errors = await ValidateAsync<AssignTutorDto>(dto,
+                typeof(AssignTutorDtoValidator));
+
+            if (errors.Any())
+                return BadRequest(new { Errors = errors });
+
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
-                var course = await _courseService.AssignTutor(id: id, tutorId: tutorId, requesterId: currentUserId);
+                var course = await _courseService.AssignTutor(id: id, tutorId: dto.TutorId, requesterId: currentUserId);
                 return Ok(course);
             }
             catch (Exception ex)

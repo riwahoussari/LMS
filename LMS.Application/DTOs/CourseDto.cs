@@ -19,6 +19,11 @@ namespace LMS.Application.DTOs
         public string[] PrerequisiteIds { get; set; } = null!;
     }
 
+    public class AssignTutorDto 
+    {
+        public string TutorId { get; set; } = null!;
+    }
+
     // Read
     public class GetCoursesQueryDto
     {
