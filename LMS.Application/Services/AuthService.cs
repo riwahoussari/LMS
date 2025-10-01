@@ -136,6 +136,8 @@ namespace LMS.Application.Services
             if (user == null || !await _userManager.CheckPasswordAsync(user, password))
                 throw new AuthenticationException("Invalid Credentials");
 
+            if (user.Suspended == true) throw new Exception("Your account is suspended.");
+
             return _mapper.Map<UserResponseDto>(user);
         }
 

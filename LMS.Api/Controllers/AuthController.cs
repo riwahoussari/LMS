@@ -168,9 +168,10 @@ namespace LMS.Api.Controllers
                 var tokenResponse = await CreateTokenResponse(user);
                 return Ok(tokenResponse);
             }
-            catch (AuthenticationException ex)
+            catch (Exception ex)
             {
-                return Unauthorized(ex.Message);
+                if (ex is AuthenticationException) return Unauthorized(ex.Message);
+                return BadRequest(ex.Message);
             }
             
         }
