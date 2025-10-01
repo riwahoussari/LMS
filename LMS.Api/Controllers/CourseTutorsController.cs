@@ -63,13 +63,13 @@ namespace LMS.Api.Controllers
         /// - Removes the specified tutor from the course.  
         /// - Returns the updated course details.  
         /// </remarks>
-        [HttpDelete("{id}/tutors")]
+        [HttpDelete("{id}/tutors/{tutorId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CourseResponseDto))]
         [SwaggerResponse(statusCode: 400, description: "Invalid request or validation errors")]
         [SwaggerResponse(statusCode: 401, description: "User not authenticated")]
         [SwaggerResponse(statusCode: 403, description: "User authenticated but not an assigned tutor")]
         [SwaggerResponse(statusCode: 404, description: "Course or tutor not found")]
-        public async Task<IActionResult> UnassignTutor(string id, [FromForm] string tutorId)
+        public async Task<IActionResult> UnassignTutor(string id, string tutorId)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
