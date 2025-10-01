@@ -56,12 +56,10 @@ namespace LMS.Api.Controllers
                 IEnumerable<EnrollmentResponseDto> enrollments;
                 if (string.IsNullOrEmpty(query.StudentProfileId))
                 {
-                    enrollments = await _enrollmentsService.GetAllAsync();
+                    return BadRequest("StudentProfileId is required");
                 }
-                else
-                {
-                    enrollments = await _enrollmentsService.GetByStudentAsync(query.StudentProfileId, query.EnrollmentStatus);
-                }
+                enrollments = await _enrollmentsService.GetByStudentAsync(query.StudentProfileId, query.EnrollmentStatus);
+                
                 return Ok(enrollments);
             }
             catch (Exception ex)

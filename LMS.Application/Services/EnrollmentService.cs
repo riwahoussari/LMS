@@ -118,7 +118,7 @@ namespace LMS.Application.Services
            
             var enrollments = await _uow.Enrollments.FindAsync(e => 
                 e.StudentId == guid && 
-                statusFilter == null ? true : e.Status == statusFilter);
+                (statusFilter == null ? true : e.Status == statusFilter));
 
             return _mapper.Map<IEnumerable<EnrollmentResponseDto>>(enrollments);
         }

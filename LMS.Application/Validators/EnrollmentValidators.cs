@@ -11,8 +11,8 @@ namespace LMS.Application.Validators
     public class GetEnrollmentsQueryDtoValidator : AbstractValidator<GetEnrollmentsQueryDto>
     {
         public GetEnrollmentsQueryDtoValidator() 
-        { 
-                
+        {
+            RuleFor(x => x.StudentProfileId).NotEmpty().WithMessage("StudentProfileId is required");
         }
     }
 }

@@ -10,7 +10,7 @@ namespace LMS.Application.DTOs
     public class GetEnrollmentsQueryDto
     {
         public EnrollmentStatus? EnrollmentStatus { get; set; }
-        public string? StudentProfileId { get; set; }
+        public string StudentProfileId { get; set; } = null!;
     }
 
     public class GetMyEnrollmentsQueryDto

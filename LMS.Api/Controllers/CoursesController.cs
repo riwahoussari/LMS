@@ -254,7 +254,7 @@ namespace LMS.Api.Controllers
         /// - **UPDATE RULES**
         /// - - If course is in Draft status: Full Update (all fields allowed)
         /// - - If course is in Archived status: No Updates Allowed
-        /// - - If Course is in Published status: Parial Update ()
+        /// - - If Course is in Published status: Parial Update (Description - Max Capacity - Tags)
         /// </remarks>
         [Authorize(Roles = RoleConstants.Tutor)]
         [HttpPut("{id}")]
