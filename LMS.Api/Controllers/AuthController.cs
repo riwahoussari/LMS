@@ -208,6 +208,8 @@ namespace LMS.Api.Controllers
             // rotate token (invalidate old, issue new)
             await _authService.RevokeRefreshTokenAsync(storedToken.Token);
 
+            if (storedToken.User?.Suspended == true) return BadRequest("Your account is suspended");
+
             var tokenResponse = await CreateTokenResponse(storedToken.User!);
             return Ok(tokenResponse);
         }
