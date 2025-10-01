@@ -68,6 +68,23 @@ namespace LMS.Application.Services
                     throw new Exception("You must complete all prerequisite courses.");
             }
 
+            // Check schedule conflict
+            var activeEnrollments = await _uow.Enrollments.FindAsync(e =>
+                e.StudentId == studentProfile.Id &&
+                (e.Status == EnrollmentStatus.Active || e.Status == EnrollmentStatus.Pending));
+
+            foreach (var e in activeEnrollments)
+            {
+                var otherCourse = await _uow.Courses.FindSingleAsync(c => c.Id == e.CourseId);
+                if (otherCourse == null) continue;
+
+                if (SchedulesConflict(course.Schedule, otherCourse.Schedule))
+                    throw new Exception($"Schedule conflict with course: {otherCourse.Title}");
+            }
+
+
+
+
             // Enroll
             var enrollment = new Enrollment
             {
@@ -365,7 +382,37 @@ namespace LMS.Application.Services
             return false;
         }
 
-        
+        private bool SchedulesConflict(Schedule newSchedule, Schedule existingSchedule)
+        {
+            // Convert strings to DateTime
+            var newStart = DateTime.Parse(newSchedule.StartDate);
+            var newEnd = DateTime.Parse(newSchedule.EndDate);
+            var existingStart = DateTime.Parse(existingSchedule.StartDate);
+            var existingEnd = DateTime.Parse(existingSchedule.EndDate);
+
+            // Check if date ranges overlap at all
+            if (newEnd < existingStart || existingEnd < newStart)
+                return false;
+
+            // If date ranges overlap, check sessions
+            foreach (var newSession in newSchedule.Sessions)
+            {
+                foreach (var existingSession in existingSchedule.Sessions)
+                {
+                    // Same day of week
+                    if (newSession.DayOfWeek != existingSession.DayOfWeek)
+                        continue;
+                    
+                    // Check if time intervals overlap
+                    if (newSession.StartTime < existingSession.EndTime && existingSession.StartTime < newSession.EndTime)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+
     }
 
 }
